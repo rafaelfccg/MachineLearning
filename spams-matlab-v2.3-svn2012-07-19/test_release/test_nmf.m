@@ -11,9 +11,10 @@ param.numThreads=4; % number of threads
 
 param.iter=-5;  % let us see what happens after 100 iterations.
 
+param.lambda = 0.15;    % used for nnsc
 %%%%%%%%%% FIRST EXPERIMENT %%%%%%%%%%%
 tic
-[U V] = nmf(X,param);
+[U V] = nnsc(X,param);%nmf(X,param);
 t=toc;
 fprintf('time of computation for Dictionary Learning: %f\n',t);
 

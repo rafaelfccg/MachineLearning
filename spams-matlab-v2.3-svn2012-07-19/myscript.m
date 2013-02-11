@@ -1,19 +1,21 @@
 
 clear all
 
+start_spams
+
 %%% train dictionary and get codes  
 %
 % load training samples
-gists = load('H:\MobileVisualSearch\gist\bags.mat');
+gists = load('H:\MobileVisualSearch\gist\Data\Apple_Desktops.mat');
 X = gists.gist'; % put sample in columns
 
 % load image name
-imgdir = 'H:\AmazonProductData\DemoDataSet_resized\bags\';
-imgnames = load('H:\MobileVisualSearch\gist\bags_filenames.mat');
+imgdir = 'H:\AmazonProductData\DemoDataSet_resized\Apple_Desktops\';
+imgnames = load('H:\MobileVisualSearch\gist\Data\Apple_Desktops_filenames.mat');
 imgnames = imgnames.readlist;
 
 % create results dir
-mkdir('H:\MobileVisualSearch\gist\bags\');
+mkdir('H:\MobileVisualSearch\gist\Apple_Desktops\');
 
 param.K=100;  % learns a dictionary with 100 elements
 param.lambda=0.15;
@@ -31,7 +33,7 @@ fprintf('time of computation for Dictionary Learning: %f\n',t);
 % create dictionary for each dictionary item
 group_dirs = cell(param.K,1);
 for i=1:param.K
-    res_dir = ['H:\MobileVisualSearch\gist\bags\' num2str(i) '\'];
+    res_dir = ['H:\MobileVisualSearch\gist\Apple_Desktops\' num2str(i) '\'];
     mkdir(res_dir);
     group_dirs{i,1} = res_dir;
 end
