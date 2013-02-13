@@ -265,7 +265,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       ProgressStream defaultProgress(std::cout, parameters.Verbose? Verbose:Interest);
       if(progress==0)
         progress=&defaultProgress;
-
+	  
       TreeTrainingOperation<F, S> trainingOperation(random, context, parameters, data, *progress);
 
       std::auto_ptr<Tree<F, S> > tree = std::auto_ptr<Tree<F, S> >(new Tree<F,S>(parameters.MaxDecisionLevels));

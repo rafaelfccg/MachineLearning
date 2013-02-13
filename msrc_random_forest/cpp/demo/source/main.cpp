@@ -72,43 +72,49 @@ int main(int argc, char* argv[])
     "axis-aligned split;linear split",
     "axis");
 
-  // Behaviour depends on command line mode...
+  // Behavior depends on command line mode...
   if (mode == "clas" || mode == "class")
   {
     // Supervised classification
-    CommandLineParser parser;
-    parser.SetCommand("SW CLAS");
 
-    parser.AddArgument(trainingDataPath);
-    parser.AddSwitch("T", T);
-    parser.AddSwitch("D", D);
-    parser.AddSwitch("F", F);
-    parser.AddSwitch("L", L);
+#pragma region setup_params
 
-    parser.AddSwitch("split", split);
+	  CommandLineParser parser;
+	  parser.SetCommand("SW CLAS");
 
-    parser.AddSwitch("PADX", plotPaddingX);
-    parser.AddSwitch("PADY",  plotPaddingY);
-    parser.AddSwitch("VERBOSE", verboseSwitch);
+	  parser.AddArgument(trainingDataPath);
+	  parser.AddSwitch("T", T);
+	  parser.AddSwitch("D", D);
+	  parser.AddSwitch("F", F);
+	  parser.AddSwitch("L", L);
 
-    if (argc == 2)
-    {
-      parser.PrintHelp();
-      DisplayTextFiles(CLAS_DATA_PATH);
-      return 0;
-    }
+	  parser.AddSwitch("split", split);
 
-    if (parser.Parse(argc, argv, 2) == false)
-      return 0;
+	  parser.AddSwitch("PADX", plotPaddingX);
+	  parser.AddSwitch("PADY",  plotPaddingY);
+	  parser.AddSwitch("VERBOSE", verboseSwitch);
 
-    TrainingParameters trainingParameters;
-    trainingParameters.MaxDecisionLevels = D.Value-1;
-    trainingParameters.NumberOfCandidateFeatures = F.Value;
-    trainingParameters.NumberOfCandidateThresholdsPerFeature = L.Value;
-    trainingParameters.NumberOfTrees = T.Value;
-    trainingParameters.Verbose = verboseSwitch.Used();
+	  if (argc == 2)
+	  {
+		  parser.PrintHelp();
+		  DisplayTextFiles(CLAS_DATA_PATH);
+		  return 0;
+	  }
 
-    PointF plotDilation(plotPaddingX.Value, plotPaddingY.Value);
+	  if (parser.Parse(argc, argv, 2) == false)
+		  return 0;
+
+	  TrainingParameters trainingParameters;
+	  trainingParameters.MaxDecisionLevels = D.Value-1;
+	  trainingParameters.NumberOfCandidateFeatures = F.Value;
+	  trainingParameters.NumberOfCandidateThresholdsPerFeature = L.Value;
+	  trainingParameters.NumberOfTrees = T.Value;
+	  trainingParameters.Verbose = verboseSwitch.Used();
+
+	  PointF plotDilation(plotPaddingX.Value, plotPaddingY.Value);
+
+#pragma endregion setup_params
+    
 
     // Load training data for a 2D density estimation problem.
     std::auto_ptr<DataPointCollection> trainingData = std::auto_ptr<DataPointCollection> ( LoadTrainingData(
@@ -122,21 +128,27 @@ int main(int argc, char* argv[])
 
     if (split.Value == "linear")
     {
+		// generate split functions
       LinearFeatureFactory linearFeatureFactory;
-      std::auto_ptr<Forest<LinearFeatureResponse2d, HistogramAggregator> > forest = ClassificationDemo<LinearFeatureResponse2d>::Train(
+      std::auto_ptr<Forest<LinearFeatureResponse2d, HistogramAggregator> > forest = 
+		  ClassificationDemo<LinearFeatureResponse2d>::Train(
         *trainingData,
         &linearFeatureFactory,
         trainingParameters);
 
       std::auto_ptr<Bitmap<PixelBgr> > result = std::auto_ptr<Bitmap<PixelBgr> >(
-        ClassificationDemo<LinearFeatureResponse2d>::Visualize(*forest, *trainingData, Size(300, 300), plotDilation));
+        ClassificationDemo<LinearFeatureResponse2d>::Visualize(
+		*forest, 
+		*trainingData, 
+		Size(300, 300), 
+		plotDilation));
 
       std::cout << "\nSaving output image to result.dib" << std::endl;
       result->Save("result.dib");
     }
     else if (split.Value == "axis")
-    {
-      AxisAlignedFeatureResponseFactory axisAlignedFeatureFactory;
+	{
+		AxisAlignedFeatureResponseFactory axisAlignedFeatureFactory;
       std::auto_ptr<Forest<AxisAlignedFeatureResponse, HistogramAggregator> > forest = ClassificationDemo<AxisAlignedFeatureResponse>::Train (
         *trainingData,
         &axisAlignedFeatureFactory,
@@ -366,6 +378,8 @@ int main(int argc, char* argv[])
     return 0;
   }
 
+
+  getchar();
   return 0;
 }
 

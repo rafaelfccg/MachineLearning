@@ -22,7 +22,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
   class IFeatureResponseFactory
   {
   public:
-    virtual F CreateRandom(Random& random)=0;
+	  virtual F CreateRandom(Random& random)=0;
   };
 
   class LinearFeatureFactory: public IFeatureResponseFactory<LinearFeatureResponse2d>
@@ -96,9 +96,9 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       const TrainingParameters& TrainingParameters ) // where F : IFeatureResponse
     {
       if (trainingData.Dimensions() != 2)
-        throw std::runtime_error("Training data points must be 2D.");
+        throw std::runtime_error("Training data points must be 2D.");	// only for visualization use
       if (trainingData.HasLabels() == false)
-        throw std::runtime_error("Training data points must be labelled.");
+        throw std::runtime_error("Training data points must be labeled.");
       if (trainingData.HasTargetValues() == true)
         throw std::runtime_error("Training data points should not have target values.");
 

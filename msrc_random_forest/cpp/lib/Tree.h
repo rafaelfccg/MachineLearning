@@ -30,7 +30,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
     int decisionLevels_;
 
-    std::vector<Node<F,S> > nodes_;
+    std::vector<Node<F,S> > nodes_;	// actual data
 
   public:
     // Implementation only

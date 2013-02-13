@@ -46,8 +46,8 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
     // The weak learner associated with a decision node is defined by a
     // feature and an associated threshold. These values are only valid
-    // for split nodes.
-    F Feature;
+	// for split nodes.
+	F Feature;
 
     float Threshold;
 
