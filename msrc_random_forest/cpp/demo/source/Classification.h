@@ -18,6 +18,9 @@
 
 namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 {
+
+  //////////////////////////////////////////////////////////////////////////
+
   template<class F>
   class IFeatureResponseFactory
   {
@@ -36,6 +39,31 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
   public:
     AxisAlignedFeatureResponse CreateRandom(Random& random);
   };
+
+#pragma region nd feature factory by Jie Feng
+
+  template<class F>
+  class IFeatureResponseFactoryND
+  {
+  public:
+	  virtual F CreateRandom(Random& random, int N)=0;
+  };
+
+  class LinearFeatureFactoryND: public IFeatureResponseFactoryND<LinearFeatureResponseND>
+  {
+  public:
+	  LinearFeatureResponseND CreateRandom(Random& random, int N);
+  };
+
+  class AxisAlignedFeatureResponseFactoryND : public IFeatureResponseFactoryND<AxisAlignedFeatureResponseND>
+  {
+  public:
+	  AxisAlignedFeatureResponseND CreateRandom(Random& random, int N);
+  };
+
+#pragma endregion nd feature factory by Jie Feng
+
+  //////////////////////////////////////////////////////////////////////////
 
   template<class F>
   class ClassificationTrainingContext : public ITrainingContext<F,HistogramAggregator> // where F:IFeatureResponse
@@ -83,6 +111,8 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       return gain < 0.01;
     }
   };
+
+  //////////////////////////////////////////////////////////////////////////
 
   template<class F>
   class ClassificationDemo
@@ -236,4 +266,128 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
   template<class F>
   const PixelBgr ClassificationDemo<F>::UnlabelledDataPointColor = PixelBgr::FromArgb(192, 192, 192);
+
+
+#pragma region added by jie feng
+
+  template<class F>
+  class ClassificationTrainingContextND : public ITrainingContext<F,HistogramAggregator> // where F:IFeatureResponse
+  {
+  private:
+	  int nClasses_;
+
+	  int nDim_;
+
+	  IFeatureResponseFactoryND<F>* featureFactory_;
+
+  public:
+	  ClassificationTrainingContextND(int nClasses, IFeatureResponseFactoryND<F>* featureFactory, int dim)
+	  {
+		  nClasses_ = nClasses;
+		  nDim_ = dim;
+		  featureFactory_ = featureFactory;
+	  }
+
+  private:
+	  // Implementation of ITrainingContext
+	  F GetRandomFeature(Random& random)
+	  {
+		  return featureFactory_->CreateRandom(random, nDim_);
+	  }
+
+	  HistogramAggregator GetStatisticsAggregator()
+	  {
+		  return HistogramAggregator(nClasses_);
+	  }
+
+	  double ComputeInformationGain(const HistogramAggregator& allStatistics, const HistogramAggregator& leftStatistics, const HistogramAggregator& rightStatistics)
+	  {
+		  double entropyBefore = allStatistics.Entropy();
+
+		  unsigned int nTotalSamples = leftStatistics.SampleCount() + rightStatistics.SampleCount();
+
+		  if (nTotalSamples <= 1)
+			  return 0.0;
+
+		  double entropyAfter = (leftStatistics.SampleCount() * leftStatistics.Entropy() + rightStatistics.SampleCount() * rightStatistics.Entropy()) / nTotalSamples;
+
+		  return entropyBefore - entropyAfter;
+	  }
+
+	  bool ShouldTerminate(const HistogramAggregator& parent, const HistogramAggregator& leftChild, const HistogramAggregator& rightChild, double gain)
+	  {
+		  return gain < 0.01;
+	  }
+  };
+
+  //////////////////////////////////////////////////////////////////////////
+
+  template<class F>
+  class ClassificationDemoND
+  {
+
+  public:
+	  static std::auto_ptr<Forest<F, HistogramAggregator> > Train (
+		  const DataPointCollection& trainingData,
+		  IFeatureResponseFactoryND<F>* featureFactory,
+		  const TrainingParameters& TrainingParameters ) // where F : IFeatureResponse
+	  {
+		  std::cout<<"Training data dimension: "<<trainingData.Dimensions()<<endl;
+
+		  //if (trainingData.Dimensions() != 2)
+			 // throw std::runtime_error("Training data points must be 2D.");	// only for visualization use
+		  if (trainingData.HasLabels() == false)
+			  throw std::runtime_error("Training data points must be labeled.");
+		  if (trainingData.HasTargetValues() == true)
+			  throw std::runtime_error("Training data points should not have target values.");
+
+		  std::cout << "Running training..." << std::endl;
+
+		  Random random;
+
+		  ClassificationTrainingContextND<F> classificationContextND(trainingData.CountClasses(), featureFactory, trainingData.Dimensions());
+
+		  std::auto_ptr<Forest<F, HistogramAggregator> > forest 
+			  = ForestTrainer<F, HistogramAggregator>::TrainForest (
+			  random, TrainingParameters, classificationContextND, trainingData );
+
+		  return forest;
+	  }
+
+
+	  /// <summary>
+	  /// Apply a trained forest to some test data.
+	  /// </summary>
+	  /// <typeparam name="F">Type of split function</typeparam>
+	  /// <param name="forest">Trained forest</param>
+	  /// <param name="testData">Test data</param>
+	  /// <returns>An array of class distributions, one per test data point</returns>
+	  static void Test(const Forest<F, HistogramAggregator>& forest, const DataPointCollection& testData, std::vector<HistogramAggregator>& distributions) // where F : IFeatureResponse
+	  {
+		  int nClasses = forest.GetTree(0).GetNode(0).TrainingDataStatistics.BinCount();
+
+		  std::vector<std::vector<int> > leafIndicesPerTree;
+		  forest.Apply(testData, leafIndicesPerTree);
+
+		  std::vector<HistogramAggregator> result(testData.Count());
+
+		  for (int i = 0; i < testData.Count(); i++)
+		  {
+			  // Aggregate statistics for this sample over all leaf nodes reached
+			  result[i] = HistogramAggregator(nClasses);
+			  for (int t = 0; t < forest.TreeCount(); t++)
+			  {
+				  int leafIndex = leafIndicesPerTree[t][i];
+				  result[i].Aggregate(forest.GetTree(t).GetNode(leafIndex).TrainingDataStatistics);
+			  }
+		  }
+
+		  distributions = result;
+		  //return result;
+	  }
+  };
+
+#pragma endregion added by jie feng
+
+
 } } }

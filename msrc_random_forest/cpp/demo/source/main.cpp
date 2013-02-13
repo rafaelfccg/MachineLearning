@@ -39,11 +39,57 @@ const std::string SSCLAS_DATA_PATH = "/data/semi-supervised classification";
 const std::string REGRESSION_DATA_PATH = "/data/regression";
 const std::string DENSITY_DATA_PATH = "/data/density estimation";
 
+
+// ADDED by jiefeng to test n-dim classification
+void TestNDClf(string train_file, vector<HistogramAggregator>& res)
+{
+	// set parameters
+	string training_file = "";
+	string test_file = "";
+	string forest_save_file = "";
+
+	TrainingParameters params;
+	params.MaxDecisionLevels = 10;
+	params.NumberOfCandidateFeatures = 100;
+	params.NumberOfCandidateThresholdsPerFeature = 50;
+	params.NumberOfTrees = 4;
+	params.Verbose = true;
+
+	int data_dim = 4;
+
+	// load training data
+	ifstream in(training_file.c_str());
+	std::auto_ptr<DataPointCollection> trainingData = DataPointCollection::Load(in, data_dim, DataDescriptor::HasClassLabels);
+
+	// load testing data
+	ifstream testin(test_file.c_str());
+	std::auto_ptr<DataPointCollection> testData = DataPointCollection::Load(testin, data_dim, DataDescriptor::HasClassLabels);
+
+	// train forest
+	LinearFeatureFactoryND linearFeatureFactoryND;
+	std::auto_ptr<Forest<LinearFeatureResponseND, HistogramAggregator> > forest = 
+		ClassificationDemoND<LinearFeatureResponseND>::Train(
+		*trainingData,
+		&linearFeatureFactoryND,
+		params);
+
+	// save to file
+	forest->Serialize(forest_save_file);
+
+	// apply to test data
+	ClassificationDemoND<LinearFeatureResponseND>::Test(*forest, *testData, res);
+
+
+	
+}
+
+
 int main(int argc, char* argv[])
 {
   if(argc<2 || std::string(argv[1])=="/?" || toLower(argv[1])=="help")
   {
     DisplayHelp();
+	getchar();
     return 0;
   }
 

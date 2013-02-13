@@ -13,5 +13,22 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
   {
     return LinearFeatureResponse2d::CreateRandom(random);
   }
+
+
+#pragma region added by jie feng
+
+  AxisAlignedFeatureResponseND AxisAlignedFeatureResponseFactoryND::CreateRandom(Random& random, int N)
+  {
+	  return AxisAlignedFeatureResponseND::CreateRandom(random, N);
+  }
+
+  LinearFeatureResponseND LinearFeatureFactoryND::CreateRandom(Random& random, int N)
+  {
+	  return LinearFeatureResponseND::CreateRandom(random, N);
+  }
+
+#pragma endregion added by jie feng
+
+
 } } }
 

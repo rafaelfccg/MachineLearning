@@ -6,6 +6,8 @@
 // contiguously in a linear array.
 
 #include <string>
+#include <vector>
+using namespace std;
 
 #include "Sherwood.h"
 
@@ -19,7 +21,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
   /// </summary>
   class AxisAlignedFeatureResponse
   {
-    int axis_;
+    int axis_;	// specific axis
 
   public:
     AxisAlignedFeatureResponse()
@@ -53,6 +55,49 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
     std::string ToString() const;
   };
+
+  //////////////////////////////////////////////////////////////////////////
+  // added by Jie Feng
+  //////////////////////////////////////////////////////////////////////////
+  // a n dimensional axis feature
+  class AxisAlignedFeatureResponseND
+  {
+	  int axis_;
+
+  public:
+	  AxisAlignedFeatureResponseND()
+	  {
+		  axis_ = -1;
+	  }
+
+	  /// <summary>
+	  /// Create an AxisAlignedFeatureResponse instance for the specified axis.
+	  /// </summary>
+	  /// <param name="axis">The zero-based index of the axis.</param>
+	  AxisAlignedFeatureResponseND(int axis)
+	  {
+		  axis_ = axis;
+	  }
+
+	  /// <summary>
+	  /// Create an AxisAlignedFeatureResponse instance with a random choice of axis.
+	  /// </summary>
+	  /// <param name="randomNumberGenerator">A random number generator.</param>
+	  /// <returns>A new AxisAlignedFeatureResponse instance.</returns>
+	  static AxisAlignedFeatureResponseND CreateRandom(Random& random, int N);
+
+	  int Axis() const
+	  {
+		  return axis_;
+	  }
+
+	  // IFeatureResponse implementation
+	  float GetResponse(const IDataPointCollection& data, unsigned int sampleIndex) const;
+
+	  std::string ToString() const;
+  };
+
+
 
   /// <summary>
   /// A feature that orders data points using a linear combination of their
@@ -91,4 +136,48 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
     std::string ToString()  const;
   };	
+
+
+  //////////////////////////////////////////////////////////////////////////
+  // n dimensional linear feature by Jie Feng
+  //////////////////////////////////////////////////////////////////////////
+  class LinearFeatureResponseND
+  {
+	  float dx_, dy_;
+	  vector<float> d_pos;	// params for each coordinate
+
+  public:
+	  LinearFeatureResponseND()
+	  {
+		  dx_ = 0.0;
+		  dy_ = 0.0;
+	  }
+
+	  /// <summary>
+	  /// Create a LinearFeatureResponse2d instance for the specified direction vector.
+	  /// </summary>
+	  /// <param name="dx">The first element of the direction vector.</param>
+	  /// <param name="dx">The second element of the direction vector.</param> 
+	  LinearFeatureResponseND(vector<float>& d_data)
+	  {
+		  d_pos.clear();
+		  d_pos.resize(d_data.size());
+		  for(size_t i=0; i<d_data.size(); i++)
+			  d_pos.push_back(d_data[i]);
+	  }
+
+	  /// <summary>
+	  /// Create a LinearFeatureResponse2d instance with a random direction vector.
+	  /// </summary>
+	  /// <param name="randomNumberGenerator">A random number generator.</param>
+	  /// <returns>A new LinearFeatureResponse2d instance.</returns>
+	  static LinearFeatureResponseND CreateRandom(Random& random, int N);
+
+	  // IFeatureResponse implementation
+	  float GetResponse(const IDataPointCollection& data, unsigned int index) const;
+
+	  std::string ToString()  const;
+  };	
+
+
 } } }
