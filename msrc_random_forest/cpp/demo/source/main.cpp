@@ -78,14 +78,19 @@ void TestNDClf()
 	//// save to file
 	//forest->Serialize(forest_save_file);
 
-	//// apply to test data
-	//vector<HistogramAggregatorNC> res;
-	//ClassificationDemoND<LinearFeatureResponseND>::Test(*forest, *testData, res);
-
 	// load from file
 	auto_ptr<Forest<LinearFeatureResponseND, HistogramAggregatorNC> > forest = 
 		Forest<LinearFeatureResponseND, HistogramAggregatorNC>::Deserialize(forest_save_file);
 
+	// apply to test data
+	vector<HistogramAggregatorNC> res;
+	ClassificationDemoND<LinearFeatureResponseND>::Test(*forest, *testData, res);
+	for(int i=0; i<testData->Count(); i++)
+	{
+		cout<<"Test data "<<i<<" : "<<testData->GetIntegerLabel(i)<<endl;
+		for(int j=0; j<res[i].BinCount(); j++)
+			cout<<"Class "<<j<<" : "<<res[i].GetProbability(j)<<endl;
+	}
 
 	cout<<"Finish."<<endl;
 	
