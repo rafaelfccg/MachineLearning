@@ -67,6 +67,12 @@ void TestNDClf()
 	//std::auto_ptr<DataPointCollection> trainingData = 
 	//	DataPointCollection::LoadND(trainin, data_dim, DataDescriptor::HasClassLabels);
 
+	cv::Mat trainDataMat;
+	cv::Mat trainLabels;
+	std::auto_ptr<DataPointCollection> trainingDataMat = DataPointCollection::LoadNDFromMat(
+		trainDataMat, trainLabels, 
+		trainDataMat.cols, DataDescriptor::HasClassLabels);
+
 	////// train forest
 	//LinearFeatureFactoryND linearFeatureFactoryND;
 	//std::auto_ptr<Forest<LinearFeatureResponseND, HistogramAggregatorNC> > forest = 
