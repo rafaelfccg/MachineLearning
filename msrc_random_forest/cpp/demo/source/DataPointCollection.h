@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <memory>
+#include <opencv2/opencv.hpp>
 
 #include "Sherwood.h"
 
@@ -56,6 +57,8 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     static  std::auto_ptr<DataPointCollection> Load(std::istream& r, int dataDimension, DataDescriptor::e descriptor);
 
 	static std::auto_ptr<DataPointCollection> LoadND(std::istream& r, int dataDimension, DataDescriptor::e descriptor);
+
+	static std::auto_ptr<DataPointCollection> LoadNDFromMat(const cv::Mat& samples, const cv::Mat& labels, int dataDimension, DataDescriptor::e descriptor);
 
     /// <summary>
     /// Generate a 2D dataset with data points distributed in a grid pattern.

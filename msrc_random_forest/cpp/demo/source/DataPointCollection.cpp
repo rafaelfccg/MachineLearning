@@ -149,6 +149,46 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 	  return result;
   }
 
+  std::auto_ptr<DataPointCollection> DataPointCollection::LoadNDFromMat(
+	  const cv::Mat& samples, const cv::Mat& labels, 
+	  int dataDimension, DataDescriptor::e descriptor)
+  {
+	  bool bHasTargetValues = (descriptor & DataDescriptor::HasTargetValues) == DataDescriptor::HasTargetValues;
+	  bool bHasClassLabels = (descriptor & DataDescriptor::HasClassLabels) == DataDescriptor::HasClassLabels;
+
+	  std::auto_ptr<DataPointCollection> result = std::auto_ptr<DataPointCollection>(new DataPointCollection());
+	  result->dimension_ = dataDimension;
+
+	  unsigned int elementsPerLine = (bHasClassLabels ? 1 : 0) + dataDimension + (bHasTargetValues ? 1 : 0);
+
+
+	  char str[20];
+	  for(int r=0; r<samples.rows; r++)
+	  {
+		  int index = 0;
+
+		  if (bHasClassLabels)
+		  {
+			  int cls_id = labels.at<int>(r, 0);
+			  sprintf(str, "%d", cls_id);
+			  std::string cls_id_str(str);
+
+			  
+			  result->labelIndices_[cls_id_str] = cls_id;
+
+			  result->labels_.push_back(cls_id);
+		  }
+
+		  for (int i = 0; i < dataDimension; i++)
+		  {
+			  float x = samples.at<float>(r,i);
+			  result->data_.push_back(x);
+		  }
+	  }
+
+	  return result;
+  }
+
   /// <summary>
   /// Generate a 2D dataset with data points distributed in a grid pattern.
   /// Intended for generating visualization images.
