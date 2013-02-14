@@ -107,10 +107,10 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
   float LinearFeatureResponseND::GetResponse(const IDataPointCollection& data, unsigned int index) const
   {
 	  const DataPointCollection& concreteData = (const DataPointCollection&)(data);
-	  assert(concreteData.Count() == d_pos.size());
+	  //assert(concreteData.Dimensions() == d_pos.size());
 
 	  float res = 0;
-	  for(size_t i=0; i<d_pos.size(); i++)
+	  for(size_t i=0; i<concreteData.Dimensions(); i++)
 		  res += d_pos[i] * concreteData.GetDataPoint((int)index)[i];
 
 	  return res;
@@ -120,8 +120,8 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
   {
 	  std::stringstream s;
 	  s << "LinearFeatureResponse(";
-	  for(size_t i=0; i<d_pos.size(); i++)
-		s << d_pos[i] << ",";
+	  /*for(size_t i=0; i<d_pos.size(); i++)
+		s << d_pos[i] << ",";*/
 	  s<<")";
 
 	  return s.str();

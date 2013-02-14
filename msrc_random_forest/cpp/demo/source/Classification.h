@@ -271,7 +271,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 #pragma region added by jie feng
 
   template<class F>
-  class ClassificationTrainingContextND : public ITrainingContext<F,HistogramAggregator> // where F:IFeatureResponse
+  class ClassificationTrainingContextND : public ITrainingContext<F,HistogramAggregatorNC> // where F:IFeatureResponse
   {
   private:
 	  int nClasses_;
@@ -295,12 +295,15 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 		  return featureFactory_->CreateRandom(random, nDim_);
 	  }
 
-	  HistogramAggregator GetStatisticsAggregator()
+	  HistogramAggregatorNC GetStatisticsAggregator()
 	  {
-		  return HistogramAggregator(nClasses_);
+		  return HistogramAggregatorNC(nClasses_);
 	  }
 
-	  double ComputeInformationGain(const HistogramAggregator& allStatistics, const HistogramAggregator& leftStatistics, const HistogramAggregator& rightStatistics)
+	  double ComputeInformationGain(
+		  const HistogramAggregatorNC& allStatistics, 
+		  const HistogramAggregatorNC& leftStatistics, 
+		  const HistogramAggregatorNC& rightStatistics)
 	  {
 		  double entropyBefore = allStatistics.Entropy();
 
@@ -314,7 +317,11 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 		  return entropyBefore - entropyAfter;
 	  }
 
-	  bool ShouldTerminate(const HistogramAggregator& parent, const HistogramAggregator& leftChild, const HistogramAggregator& rightChild, double gain)
+	  bool ShouldTerminate(
+		  const HistogramAggregatorNC& parent, 
+		  const HistogramAggregatorNC& leftChild, 
+		  const HistogramAggregatorNC& rightChild, 
+		  double gain)
 	  {
 		  return gain < 0.01;
 	  }
@@ -327,7 +334,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
   {
 
   public:
-	  static std::auto_ptr<Forest<F, HistogramAggregator> > Train (
+	  static std::auto_ptr<Forest<F, HistogramAggregatorNC> > Train (
 		  const DataPointCollection& trainingData,
 		  IFeatureResponseFactoryND<F>* featureFactory,
 		  const TrainingParameters& TrainingParameters ) // where F : IFeatureResponse
@@ -347,8 +354,8 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
 		  ClassificationTrainingContextND<F> classificationContextND(trainingData.CountClasses(), featureFactory, trainingData.Dimensions());
 
-		  std::auto_ptr<Forest<F, HistogramAggregator> > forest 
-			  = ForestTrainer<F, HistogramAggregator>::TrainForest (
+		  std::auto_ptr<Forest<F, HistogramAggregatorNC> > forest 
+			  = ForestTrainer<F, HistogramAggregatorNC>::TrainForest (
 			  random, TrainingParameters, classificationContextND, trainingData );
 
 		  return forest;
@@ -362,19 +369,22 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 	  /// <param name="forest">Trained forest</param>
 	  /// <param name="testData">Test data</param>
 	  /// <returns>An array of class distributions, one per test data point</returns>
-	  static void Test(const Forest<F, HistogramAggregator>& forest, const DataPointCollection& testData, std::vector<HistogramAggregator>& distributions) // where F : IFeatureResponse
+	  static void Test(
+		  const Forest<F, HistogramAggregatorNC>& forest, 
+		  const DataPointCollection& testData, 
+		  std::vector<HistogramAggregatorNC>& distributions) // where F : IFeatureResponse
 	  {
 		  int nClasses = forest.GetTree(0).GetNode(0).TrainingDataStatistics.BinCount();
 
 		  std::vector<std::vector<int> > leafIndicesPerTree;
 		  forest.Apply(testData, leafIndicesPerTree);
 
-		  std::vector<HistogramAggregator> result(testData.Count());
+		  std::vector<HistogramAggregatorNC> result(testData.Count());
 
 		  for (int i = 0; i < testData.Count(); i++)
 		  {
 			  // Aggregate statistics for this sample over all leaf nodes reached
-			  result[i] = HistogramAggregator(nClasses);
+			  result[i] = HistogramAggregatorNC(nClasses);
 			  for (int t = 0; t < forest.TreeCount(); t++)
 			  {
 				  int leafIndex = leafIndicesPerTree[t][i];

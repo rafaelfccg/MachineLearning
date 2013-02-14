@@ -49,6 +49,44 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     HistogramAggregator DeepClone() const;
   };
 
+  // for multiple class
+  struct HistogramAggregatorNC
+  {
+  private:
+	  //unsigned short bins_[4];
+	  int bins_[500];	// changed by jie feng to cope with large training set and class numbers (max to 1000)
+	  int binCount_;
+
+	  int MAX_CLASS_NO;
+
+	  unsigned int sampleCount_;
+
+  public:
+	  double Entropy() const;
+
+	  HistogramAggregatorNC();
+
+	  HistogramAggregatorNC(int nClasses);
+
+	  float GetProbability(int classIndex) const;
+
+	  int BinCount() const {return binCount_; }
+
+	  unsigned int SampleCount() const { return sampleCount_; }
+
+	  int FindTallestBinIndex() const;
+
+	  // IStatisticsAggregator implementation
+	  void Clear();
+
+	  void Aggregate(const IDataPointCollection& data, unsigned int index);
+
+	  void Aggregate(const HistogramAggregatorNC& aggregator);
+
+	  HistogramAggregatorNC DeepClone() const;
+  };
+
+
   class GaussianPdf2d
   {
   private:

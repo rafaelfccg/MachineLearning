@@ -55,6 +55,8 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     /// <param name="bHasTargetValues">Are the data associated with target values.</param>
     static  std::auto_ptr<DataPointCollection> Load(std::istream& r, int dataDimension, DataDescriptor::e descriptor);
 
+	static std::auto_ptr<DataPointCollection> LoadND(std::istream& r, int dataDimension, DataDescriptor::e descriptor);
+
     /// <summary>
     /// Generate a 2D dataset with data points distributed in a grid pattern.
     /// Intended for generating visualization images.

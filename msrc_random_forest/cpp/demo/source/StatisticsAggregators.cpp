@@ -31,8 +31,8 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
   HistogramAggregator::HistogramAggregator(int nClasses)
   {
-    if(nClasses>4)
-      throw std::runtime_error("HistogramAggregator supports a maximum of four classes.");
+	  if(nClasses>4)
+		  throw std::runtime_error("HistogramAggregator supports a maximum of four classes.");
     binCount_ = nClasses;
     for(int b=0; b<binCount_; b++)
       bins_[b] = 0;
@@ -99,6 +99,106 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
     return result;
   }
+
+
+#pragma region added by jie feng
+
+  double HistogramAggregatorNC::Entropy() const
+  {
+	  if (sampleCount_ == 0)
+		  return 0.0;
+
+	  double result = 0.0;
+	  for (int b = 0; b < BinCount(); b++)
+	  {
+		  double p = (double)bins_[b] / (double)sampleCount_;
+		  result -= p == 0.0 ? 0.0 : p * log(p)/log(2.0);
+	  }
+
+	  return result;
+  }
+
+  HistogramAggregatorNC::HistogramAggregatorNC(): MAX_CLASS_NO(500)
+  {
+	  binCount_ = 0;
+	  for(int b=0; b<binCount_; b++)
+		  bins_[b] = 0;
+	  sampleCount_ = 0;
+  }
+
+  HistogramAggregatorNC::HistogramAggregatorNC(int nClasses): MAX_CLASS_NO(500)
+  {
+	  if(nClasses>MAX_CLASS_NO)
+		  throw std::runtime_error("HistogramAggregator supports a maximum of 500 classes.");
+	  binCount_ = nClasses;
+	  for(int b=0; b<binCount_; b++)
+		  bins_[b] = 0;
+	  sampleCount_ = 0;
+  }
+
+  float HistogramAggregatorNC::GetProbability(int classIndex) const
+  {
+	  return (float)(bins_[classIndex]) / sampleCount_;
+  }
+
+  int HistogramAggregatorNC::FindTallestBinIndex() const
+  {
+	  unsigned int maxCount = bins_[0];
+	  int tallestBinIndex = 0;
+
+	  for (int i = 1; i < BinCount(); i++)
+	  {
+		  if (bins_[i] > maxCount)
+		  {
+			  maxCount = bins_[i];
+			  tallestBinIndex = i;
+		  }
+	  }
+
+	  return tallestBinIndex;
+  }
+
+  // IStatisticsAggregator implementation
+  void HistogramAggregatorNC::Clear()
+  {
+	  for (int b = 0; b < BinCount(); b++)
+		  bins_[b] = 0;
+
+	  sampleCount_ = 0;
+  }
+
+  void HistogramAggregatorNC::Aggregate(const IDataPointCollection& data, unsigned int index)
+  {
+	  const DataPointCollection& concreteData = (const DataPointCollection&)(data);
+
+	  bins_[concreteData.GetIntegerLabel((int)index)]++;
+	  sampleCount_ += 1;
+  }
+
+  void HistogramAggregatorNC::Aggregate(const HistogramAggregatorNC& aggregator)
+  {
+	  assert(aggregator.BinCount() == BinCount());
+
+	  for (int b = 0; b < BinCount(); b++)
+		  bins_[b] += aggregator.bins_[b];
+
+	  sampleCount_ += aggregator.sampleCount_;
+  }
+
+  HistogramAggregatorNC HistogramAggregatorNC::DeepClone() const
+  {
+	  HistogramAggregatorNC result(BinCount());
+
+	  for (int b = 0; b < BinCount(); b++)
+		  result.bins_[b] = bins_[b];
+
+	  result.sampleCount_ = sampleCount_;
+
+	  return result;
+  }
+
+#pragma endregion added by jie feng
+
 
   GaussianPdf2d::GaussianPdf2d(double mu_x, double mu_y, double Sigma_11, double Sigma_12, double Sigma_22)
   {

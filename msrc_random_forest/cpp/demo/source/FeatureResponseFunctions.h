@@ -144,10 +144,12 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
   class LinearFeatureResponseND
   {
 	  float dx_, dy_;
-	  vector<float> d_pos;	// params for each coordinate
+	  float d_pos[256];	// params for each coordinate; vector will cause wrong for default serialization
+
+	  int MAX_FEAT_DIM;
 
   public:
-	  LinearFeatureResponseND()
+	  LinearFeatureResponseND(): MAX_FEAT_DIM(256)
 	  {
 		  dx_ = 0.0;
 		  dy_ = 0.0;
@@ -158,12 +160,13 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 	  /// </summary>
 	  /// <param name="dx">The first element of the direction vector.</param>
 	  /// <param name="dx">The second element of the direction vector.</param> 
-	  LinearFeatureResponseND(vector<float>& d_data)
+	  LinearFeatureResponseND(vector<float>& d_data): MAX_FEAT_DIM(256)
 	  {
-		  d_pos.clear();
-		  d_pos.resize(d_data.size());
+		  if(d_data.size() > MAX_FEAT_DIM)
+			  throw std::runtime_error("Linear feature nd dimension could not exceed 256.");
+
 		  for(size_t i=0; i<d_data.size(); i++)
-			  d_pos.push_back(d_data[i]);
+			  d_pos[i] = d_data[i];
 	  }
 
 	  /// <summary>

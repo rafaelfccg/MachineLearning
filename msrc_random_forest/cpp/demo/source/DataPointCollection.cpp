@@ -90,6 +90,65 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     return result;
   }
 
+  std::auto_ptr<DataPointCollection> DataPointCollection::LoadND(std::istream& r, int dataDimension, DataDescriptor::e descriptor)
+  {
+	  bool bHasTargetValues = (descriptor & DataDescriptor::HasTargetValues) == DataDescriptor::HasTargetValues;
+	  bool bHasClassLabels = (descriptor & DataDescriptor::HasClassLabels) == DataDescriptor::HasClassLabels;
+
+	  std::auto_ptr<DataPointCollection> result = std::auto_ptr<DataPointCollection>(new DataPointCollection());
+	  result->dimension_ = dataDimension;
+
+	  unsigned int elementsPerLine = (bHasClassLabels ? 1 : 0) + dataDimension + (bHasTargetValues ? 1 : 0);
+
+	  std::string line;
+	  while (r.good())
+	  {
+		  getline_(r, line);
+
+		  if(r.fail())
+			  throw std::runtime_error("Failed to read line.");
+
+		  std::vector<std::string> elements;
+		  tokenize(line, elements, " "); // split space line
+
+		  if (elements.size() != elementsPerLine)
+			  throw std::runtime_error("Encountered line with unexpected number of elements.");
+
+		  int index = 0;
+
+		  if (bHasClassLabels)
+		  {
+			  if(elements[index]!="")
+			  {
+				  if (result->labelIndices_.find(elements[index])==result->labelIndices_.end())
+					  result->labelIndices_.insert(std::pair<std::string, int>(elements[index], result->labelIndices_.size()));
+
+				  result->labels_.push_back(result->labelIndices_[elements[index++]]);
+			  }
+			  else
+			  {
+				  // cast necessary in g++ because std::vector<int>::push_back() takes a reference
+				  result->labels_.push_back((int)(DataPointCollection::UnknownClassLabel));
+				  index++;
+			  }
+		  }
+
+		  for (int i = 0; i < dataDimension; i++)
+		  {
+			  float x = to_float(elements[index++]);
+			  result->data_.push_back(x);
+		  }
+
+		  if (bHasTargetValues)
+		  {
+			  float t = to_float(elements[index++]);
+			  result->targets_.push_back(t);
+		  }
+	  }
+
+	  return result;
+  }
+
   /// <summary>
   /// Generate a 2D dataset with data points distributed in a grid pattern.
   /// Intended for generating visualization images.

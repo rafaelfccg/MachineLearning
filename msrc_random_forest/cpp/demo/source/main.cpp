@@ -41,51 +41,115 @@ const std::string DENSITY_DATA_PATH = "/data/density estimation";
 
 
 // ADDED by jiefeng to test n-dim classification
-void TestNDClf(string train_file, vector<HistogramAggregator>& res)
+void TestNDClf()
 {
 	// set parameters
-	string training_file = "";
-	string test_file = "";
-	string forest_save_file = "";
+	string training_file = "d:\\train_surf.txt";
+	string test_file = "d:\\test.txt";
+	string forest_save_file = "d:\\forest.model";
 
 	TrainingParameters params;
 	params.MaxDecisionLevels = 10;
-	params.NumberOfCandidateFeatures = 100;
-	params.NumberOfCandidateThresholdsPerFeature = 50;
-	params.NumberOfTrees = 4;
+	params.NumberOfCandidateFeatures = 50;
+	params.NumberOfCandidateThresholdsPerFeature = 10;
+	params.NumberOfTrees = 3;
 	params.Verbose = true;
 
-	int data_dim = 4;
-
-	// load training data
-	ifstream in(training_file.c_str());
-	std::auto_ptr<DataPointCollection> trainingData = DataPointCollection::Load(in, data_dim, DataDescriptor::HasClassLabels);
+	int data_dim = 128;
 
 	// load testing data
-	ifstream testin(test_file.c_str());
-	std::auto_ptr<DataPointCollection> testData = DataPointCollection::Load(testin, data_dim, DataDescriptor::HasClassLabels);
+	ifstream testin(test_file.c_str());	// make sure there is an extra line after all data
+	std::auto_ptr<DataPointCollection> testData = 
+		DataPointCollection::LoadND(testin, data_dim, DataDescriptor::HasClassLabels);
 
-	// train forest
-	LinearFeatureFactoryND linearFeatureFactoryND;
-	std::auto_ptr<Forest<LinearFeatureResponseND, HistogramAggregator> > forest = 
-		ClassificationDemoND<LinearFeatureResponseND>::Train(
-		*trainingData,
-		&linearFeatureFactoryND,
-		params);
+	// load training data
+	//ifstream trainin(training_file.c_str());
+	//std::auto_ptr<DataPointCollection> trainingData = 
+	//	DataPointCollection::LoadND(trainin, data_dim, DataDescriptor::HasClassLabels);
 
-	// save to file
-	forest->Serialize(forest_save_file);
+	////// train forest
+	//LinearFeatureFactoryND linearFeatureFactoryND;
+	//std::auto_ptr<Forest<LinearFeatureResponseND, HistogramAggregatorNC> > forest = 
+	//	ClassificationDemoND<LinearFeatureResponseND>::Train(
+	//	*trainingData,
+	//	&linearFeatureFactoryND,
+	//	params);
 
-	// apply to test data
-	ClassificationDemoND<LinearFeatureResponseND>::Test(*forest, *testData, res);
+	//// save to file
+	//forest->Serialize(forest_save_file);
+
+	//// apply to test data
+	//vector<HistogramAggregatorNC> res;
+	//ClassificationDemoND<LinearFeatureResponseND>::Test(*forest, *testData, res);
+
+	// load from file
+	auto_ptr<Forest<LinearFeatureResponseND, HistogramAggregatorNC> > forest = 
+		Forest<LinearFeatureResponseND, HistogramAggregatorNC>::Deserialize(forest_save_file);
 
 
+	cout<<"Finish."<<endl;
 	
 }
 
 
 int main(int argc, char* argv[])
 {
+	TestNDClf();
+	return 0;
+
+	ifstream in1("d:\\zappos0111459.jpg.surf");
+	ifstream in2("d:\\zappos0105613.jpg.surf");
+
+	ofstream out("d:\\train_surf.txt");
+
+	float x,y,d,z;
+	float val;
+	vector<vector<float>> surfs1;
+	vector<vector<float>> surfs2;
+	while(in1>>x>>y>>d>>z)
+	{
+		vector<float> surf(128);
+		for(int i=0; i<128; i++)
+		{
+			in1>>surf[i];
+		}
+		surfs1.push_back(surf);
+	}
+
+	while(in2>>x>>y>>d>>z)
+	{
+		vector<float> surf(128);
+		for(int i=0; i<128; i++)
+		{
+			in2>>surf[i];
+		}
+		surfs2.push_back(surf);
+	}
+
+	for(int i=0; i<surfs1.size(); i++)
+	{
+		out<<1<<" ";
+		int j=0;
+		for(; j<surfs1[i].size()-1; j++)
+		{
+			out<<surfs1[i][j]<<" ";
+		}
+		out<<surfs1[i][j]<<endl;
+	}
+
+	for(int i=0; i<surfs2.size(); i++)
+	{
+		out<<2<<" ";
+		int j=0;
+		for(; j<surfs2[i].size()-1; j++)
+		{
+			out<<surfs2[i][j]<<" ";
+		}
+		out<<surfs2[i][j]<<endl;
+	}
+
+	return 0;
+
   if(argc<2 || std::string(argv[1])=="/?" || toLower(argv[1])=="help")
   {
     DisplayHelp();
