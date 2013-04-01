@@ -58,32 +58,32 @@ using namespace std;
 
 class SvmAsgd
 {
-public:
-  SvmAsgd(int dim, double lambda, double tstart, double eta0=0);
-  void renorm();
-  double wnorm();
-  double anorm();
-  double testOne(const SVector &x, double y, double *ploss, double *pnerr);
-  void trainOne(const SVector &x, double y, double eta, double mu);
-public:
-  void train(int imin, int imax, const xvec_t &x, const yvec_t &y, const char *prefix = "");
-  void test(int imin, int imax, const xvec_t &x, const yvec_t &y, const char *prefix = "");
-public:
-  double evaluateEta(int imin, int imax, const xvec_t &x, const yvec_t &y, double eta);
-  void determineEta0(int imin, int imax, const xvec_t &x, const yvec_t &y);
-private:
-  double  lambda;
-  double  eta0;
-  double  mu0;
-  double  tstart;
-  FVector w;
-  double  wDivisor;
-  double  wBias;
-  FVector a;
-  double  aDivisor;
-  double  wFraction;
-  double  aBias;
-  double  t;
+	public:
+	  SvmAsgd(int dim, double lambda, double tstart, double eta0=0);
+	  void renorm();
+	  double wnorm();
+	  double anorm();
+	  double testOne(const SVector &x, double y, double *ploss, double *pnerr);
+	  void trainOne(const SVector &x, double y, double eta, double mu);
+	public:
+	  void train(int imin, int imax, const xvec_t &x, const yvec_t &y, const char *prefix = "");
+	  void test(int imin, int imax, const xvec_t &x, const yvec_t &y, const char *prefix = "");
+	public:
+	  double evaluateEta(int imin, int imax, const xvec_t &x, const yvec_t &y, double eta);
+	  void determineEta0(int imin, int imax, const xvec_t &x, const yvec_t &y);
+	private:
+	  double  lambda;
+	  double  eta0;
+	  double  mu0;
+	  double  tstart;
+	  FVector w;
+	  double  wDivisor;
+	  double  wBias;
+	  FVector a;
+	  double  aDivisor;
+	  double  wFraction;
+	  double  aBias;
+	  double  t;
 };
 
 /// Constructor
@@ -152,40 +152,40 @@ SvmAsgd::testOne(const SVector &x, double y, double *ploss, double *pnerr)
 void
 SvmAsgd::trainOne(const SVector &x, double y, double eta, double mu)
 {
-  // Renormalize if needed
-  if (aDivisor > 1e5 || wDivisor > 1e5) renorm();
-  // Forward
-  double s = dot(w,x) / wDivisor + wBias;
-  // SGD update for regularization term
-  wDivisor = wDivisor / (1 - eta * lambda);
-  // SGD update for loss term
-  double d = LOSS::dloss(s, y);
-  double etd = eta * d * wDivisor;
-  if (etd != 0)
-    w.add(x, etd);
-  // Averaging
-  if (mu >= 1)
-    {
-      a.clear();
-      aDivisor = wDivisor;
-      wFraction = 1;
-    }
-  else if (mu > 0)
-    {
-      if (etd != 0)
-        a.add(x, - wFraction * etd);
-      aDivisor = aDivisor / (1 - mu);
-      wFraction = wFraction + mu * aDivisor / wDivisor;
-    }
-  // same for the bias
-#if BIAS
-  double etab = eta * 0.01;
-#if REGULARIZED_BIAS
-  wBias *= (1 - etab * lambda);
-#endif
-  wBias += etab * d;
-  aBias += mu * (wBias - aBias);
-#endif
+	  // Renormalize if needed
+	  if (aDivisor > 1e5 || wDivisor > 1e5) renorm();
+	  // Forward
+	  double s = dot(w,x) / wDivisor + wBias;
+	  // SGD update for regularization term
+	  wDivisor = wDivisor / (1 - eta * lambda);
+	  // SGD update for loss term
+	  double d = LOSS::dloss(s, y);
+	  double etd = eta * d * wDivisor;
+	  if (etd != 0)
+		w.add(x, etd);
+	  // Averaging
+	  if (mu >= 1)
+		{
+		  a.clear();
+		  aDivisor = wDivisor;
+		  wFraction = 1;
+		}
+	  else if (mu > 0)
+		{
+		  if (etd != 0)
+			a.add(x, - wFraction * etd);
+		  aDivisor = aDivisor / (1 - mu);
+		  wFraction = wFraction + mu * aDivisor / wDivisor;
+		}
+	  // same for the bias
+	#if BIAS
+	  double etab = eta * 0.01;
+	#if REGULARIZED_BIAS
+	  wBias *= (1 - etab * lambda);
+	#endif
+	  wBias += etab * d;
+	  aBias += mu * (wBias - aBias);
+	#endif
 }
 
 
@@ -316,76 +316,79 @@ usage(const char *progname)
 void
 parse(int argc, const char **argv)
 {
-  for (int i=1; i<argc; i++)
-    {
-      const char *arg = argv[i];
-      if (arg[0] != '-')
-        {
-          if (trainfile == 0)
-            trainfile = arg;
-          else if (testfile == 0)
-            testfile = arg;
-          else
-            usage(argv[0]);
-        }
-      else
-        {
-          while (arg[0] == '-') 
-            arg += 1;
-          string opt = arg;
-          if (opt == "lambda" && i+1<argc)
-            {
-              lambda = atof(argv[++i]);
-              assert(lambda>0 && lambda<1e4);
-            }
-          else if (opt == "epochs" && i+1<argc)
-            {
-              epochs = atoi(argv[++i]);
-              assert(epochs>0 && epochs<1e6);
-            }
-          else if (opt == "dontnormalize")
-            {
-              normalize = false;
-            }
-          else if (opt == "maxtrain" && i+1 < argc)
-            {
-              maxtrain = atoi(argv[++i]);
-              assert(maxtrain > 0);
-            }
-          else if (opt == "avgstart" && i+1 < argc)
-            {
-              avgstart = atof(argv[++i]);
-              assert(avgstart > 0);
-            }
-          else
-            {
-              cerr << "Option " << argv[i] << " not recognized." << endl;
-              usage(argv[0]);
-            }
+	  for (int i=1; i<argc; i++)
+		{
+		  const char *arg = argv[i];
+		  if (arg[0] != '-')
+			{
+			  if (trainfile == 0)
+				trainfile = arg;
+			  else if (testfile == 0)
+				testfile = arg;
+			  else
+				usage(argv[0]);
+			}
+		  else
+			{
+			  while (arg[0] == '-') 
+				arg += 1;
+			  string opt = arg;
+			  if (opt == "lambda" && i+1<argc)
+				{
+				  lambda = atof(argv[++i]);
+				  assert(lambda>0 && lambda<1e4);
+				}
+			  else if (opt == "epochs" && i+1<argc)
+				{
+				  epochs = atoi(argv[++i]);
+				  assert(epochs>0 && epochs<1e6);
+				}
+			  else if (opt == "dontnormalize")
+				{
+				  normalize = false;
+				}
+			  else if (opt == "maxtrain" && i+1 < argc)
+				{
+				  maxtrain = atoi(argv[++i]);
+				  assert(maxtrain > 0);
+				}
+			  else if (opt == "avgstart" && i+1 < argc)
+				{
+				  avgstart = atof(argv[++i]);
+				  assert(avgstart > 0);
+				}
+			  else
+				{
+				  cerr << "Option " << argv[i] << " not recognized." << endl;
+				  usage(argv[0]);
+				}
 
-        }
-    }
-  if (! trainfile)
-    usage(argv[0]);
+			}
+		}
+	  if (! trainfile)
+	  {
+		usage(argv[0]);
+		getchar();
+	  }
 }
 
 void 
 config(const char *progname)
 {
-  cout << "# Running: " << progname;
-  cout << " -lambda " << lambda;
-  cout << " -epochs " << epochs;
-  cout << " -avgstart " << avgstart;
-  if (! normalize) cout << " -dontnormalize";
-  if (maxtrain > 0) cout << " -maxtrain " << maxtrain;
-  cout << endl;
-#define NAME(x) #x
-#define NAME2(x) NAME(x)
-  cout << "# Compiled with: "
-       << " -DLOSS=" << NAME2(LOSS)
-       << " -DBIAS=" << BIAS
-       << " -DREGULARIZED_BIAS=" << REGULARIZED_BIAS
-       << endl;
+	  cout << "# Running: " << progname;
+	  cout << " -lambda " << lambda;
+	  cout << " -epochs " << epochs;
+	  cout << " -avgstart " << avgstart;
+	  if (! normalize) cout << " -dontnormalize";
+	  if (maxtrain > 0) cout << " -maxtrain " << maxtrain;
+	  cout << endl;
+	#define NAME(x) #x
+	#define NAME2(x) NAME(x)
+	  cout << "# Compiled with: "
+		   << " -DLOSS=" << NAME2(LOSS)
+		   << " -DBIAS=" << BIAS
+		   << " -DREGULARIZED_BIAS=" << REGULARIZED_BIAS
+		   << endl;
 }
 
 // --- main function
@@ -398,40 +401,47 @@ yvec_t ytest;
 
 int main(int argc, const char **argv)
 {
-  parse(argc, argv);
-  config(argv[0]);
-  if (trainfile)
-    load_datafile(trainfile, xtrain, ytrain, dims, normalize, maxtrain);
-  if (testfile)
-    load_datafile(testfile, xtest, ytest, dims, normalize);
-  cout << "# Number of features " << dims << "." << endl;
-  // prepare svm
-  int imin = 0;
-  int imax = xtrain.size() - 1;
-  int tmin = 0;
-  int tmax = xtest.size() - 1;
-  SvmAsgd svm(dims, lambda, avgstart * (imax-imin+1));
-  Timer timer;
-  // determine eta0 using sample
-  int smin = 0;
-  int smax = imin + min(1000, imax);
-  timer.start();
-  svm.determineEta0(smin, smax, xtrain, ytrain);
-  timer.stop();
-  // train
-  for(int i=0; i<epochs; i++)
-    {
-      cout << "--------- Epoch " << i+1 << "." << endl;
-      timer.start();
-      svm.train(imin, imax, xtrain, ytrain);
-      timer.stop();
-      cout << "Total training time " << setprecision(6) 
-           << timer.elapsed() << " secs." << endl;
-      svm.test(imin, imax, xtrain, ytrain, "train: ");
-      if (tmax >= tmin)
-        svm.test(tmin, tmax, xtest, ytest, "test:  ");
-    }
-  svm.renorm();
-  // Linear classifier is in svm.a and svm.aBias
-  return 0;
+	  parse(argc, argv);
+	  config(argv[0]);
+	  if (trainfile)
+		load_datafile(trainfile, xtrain, ytrain, dims, normalize, maxtrain);
+	  if (testfile)
+		load_datafile(testfile, xtest, ytest, dims, normalize);
+	  cout << "# Number of features " << dims << "." << endl;
+	  // prepare svm
+	  int imin = 0;
+	  int imax = xtrain.size() - 1;
+	  int tmin = 0;
+	  int tmax = xtest.size() - 1;
+
+	  SvmAsgd svm(dims, lambda, avgstart * (imax-imin+1));
+
+	  Timer timer;
+
+	  // determine eta0 using sample
+	  int smin = 0;
+	  int smax = imin + min(1000, imax);
+	  timer.start();
+	  svm.determineEta0(smin, smax, xtrain, ytrain);
+	  timer.stop();
+
+	  // train
+	  for(int i=0; i<epochs; i++)
+		{
+		  cout << "--------- Epoch " << i+1 << "." << endl;
+
+		  timer.start();
+		  svm.train(imin, imax, xtrain, ytrain);
+		  timer.stop();
+
+		  cout << "Total training time " << setprecision(6) 
+			   << timer.elapsed() << " secs." << endl;
+		  svm.test(imin, imax, xtrain, ytrain, "train: ");
+		  if (tmax >= tmin)
+			svm.test(tmin, tmax, xtest, ytest, "test:  ");
+		}
+	  svm.renorm();
+	  // Linear classifier is in svm.a and svm.aBias
+
+	  return 0;
 }

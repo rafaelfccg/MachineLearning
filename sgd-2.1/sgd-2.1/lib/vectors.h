@@ -98,65 +98,65 @@ public:
 
 class SVector
 {
-public:
-  struct Pair 
-  { 
-    int i; 
-    VFloat v; 
-  };
-private:
-  struct Rep
-  {
-    int refcount;
-    int npairs;
-    int mpairs;
-    int size;
-    struct Pair *pairs;
+	public:
+	  struct Pair 
+	  { 
+		int i; 
+		VFloat v; 
+	  };
+	private:
+	  struct Rep
+	  {
+		int refcount;
+		int npairs;
+		int mpairs;
+		int size;
+		struct Pair *pairs;
     
-    Rep() : npairs(0), mpairs(-1), size(0), pairs(0) {}
-    ~Rep() { delete [] pairs; }
-    void resize(int n);
-    double qset(int i, double v);
-    Rep *copy();
-  };
+		Rep() : npairs(0), mpairs(-1), size(0), pairs(0) {}
+		~Rep() { delete [] pairs; }
+		void resize(int n);
+		double qset(int i, double v);
+		Rep *copy();
+	  };
   
-  Wrapper<Rep> w;
-  Rep *rep() { return w.rep(); }
-  const Rep *rep() const { return w.rep(); }
+	  Wrapper<Rep> w;
+	  Rep *rep() { return w.rep(); }
+	  const Rep *rep() const { return w.rep(); }
   
-public:
-  SVector();
-  SVector(const FVector &v);
-  int size() const { return rep()->size; }
+	public:
+	  SVector();
+	  SVector(const FVector &v);
+	  int size() const { return rep()->size; }
 
-  // these accessors are range-checked.
-  // get() returns 0 when i is out-of-range.
-  // set() expands the vector.
-  double get(int i) const;
-  double set(int i, double v);
+	  // these accessors are range-checked.
+	  // get() returns 0 when i is out-of-range.
+	  // set() expands the vector.
+	  double get(int i) const;
+	  double set(int i, double v);
 
-  // to quickly iterate over the non-zero coefficients,
-  // do for(SVector::Pair *p = x; p->i>=0; p++) { ... }
-  int npairs() const { return rep()->npairs; }
-  operator const Pair* () const { return rep()->pairs; }
+	  // to quickly iterate over the non-zero coefficients,
+	  // do for(SVector::Pair *p = x; p->i>=0; p++) { ... }
+	  int npairs() const { return rep()->npairs; }
+	  operator const Pair* () const { return rep()->pairs; }
 
-  void zero();
-  void clear();
-  void trim();
-  SVector slice(int fi, int ti) const;
+	  void zero();
+	  void clear();
+	  void trim();
+	  SVector slice(int fi, int ti) const;
 
-  void add(const SVector &v2);
-  void add(const SVector &v2, double c2);
-  void scale(double c1);
-  void combine(double c1, const SVector &v2, double c2);
+	  void add(const SVector &v2);
+	  void add(const SVector &v2, double c2);
+	  void scale(double c1);
+	  void combine(double c1, const SVector &v2, double c2);
 
-  friend std::ostream& operator<<(std::ostream &f, const SVector &v);
-  friend std::istream& operator>>(std::istream &f, SVector &v);
-  bool save(std::ostream &f) const;
-  bool load(std::istream &f);
+	  friend std::ostream& operator<<(std::ostream &f, const SVector &v);
+	  friend std::istream& operator>>(std::istream &f, SVector &v);
+	  bool save(std::ostream &f) const;
+	  bool load(std::istream &f);
 
-  friend SVector combine(const SVector &v1, double a1, 
-                         const SVector &v2, double a2);
+	  friend SVector combine(const SVector &v1, double a1, 
+							 const SVector &v2, double a2);
 };
 
 double dot(const FVector &v1, const FVector &v2);

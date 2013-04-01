@@ -85,35 +85,35 @@ load_datafile(const char *fname,
               xvec_t &xp, yvec_t &yp, int &maxdim,
               bool normalize, int maxrows)
 {
-  bool binary = false;
-  bool compressed = false;
-  string filename = fname;
-  int len = filename.size();
-  if (len > 7 && filename.substr(len-7) == ".txt.gz")
-    compressed = true;
-  else if (len > 7 && filename.substr(len-7) == ".bin.gz")
-    compressed = binary = true;
-  else if (len > 4 && filename.substr(len-4) == ".bin")
-    binary = true;
-  else if (len > 4 && filename.substr(len-4) == ".txt")
-    binary = false;
-  else
-    assertfail("Filename suffix should be one of: "
-               << ".bin, .txt, .bin.gz, .txt.gz");
-  if (compressed)
-    {
-      igzstream f;
-      f.open(fname);
-      return load_datafile_sub(f, binary, fname, xp, yp, 
-                               maxdim, normalize, maxrows);
-    }
-  else
-    {
-      ifstream f;
-      f.open(fname);
-      return load_datafile_sub(f, binary, fname, xp, yp, 
-                               maxdim, normalize, maxrows);
-    }
+	  bool binary = false;
+	  bool compressed = false;
+	  string filename = fname;
+	  int len = filename.size();
+	  if (len > 7 && filename.substr(len-7) == ".txt.gz")
+		compressed = true;
+	  else if (len > 7 && filename.substr(len-7) == ".bin.gz")
+		compressed = binary = true;
+	  else if (len > 4 && filename.substr(len-4) == ".bin")
+		binary = true;
+	  else if (len > 4 && filename.substr(len-4) == ".txt")
+		binary = false;
+	  else
+		assertfail("Filename suffix should be one of: "
+				   << ".bin, .txt, .bin.gz, .txt.gz");
+	  if (compressed)
+		{
+		  igzstream f;
+		  f.open(fname);
+		  return load_datafile_sub(f, binary, fname, xp, yp, 
+								   maxdim, normalize, maxrows);
+		}
+	  else
+		{
+		  ifstream f;
+		  f.open(fname);
+		  return load_datafile_sub(f, binary, fname, xp, yp, 
+								   maxdim, normalize, maxrows);
+		}
 }
 
 
