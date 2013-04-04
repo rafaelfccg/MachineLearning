@@ -299,7 +299,7 @@ saveSvmLight(const char *fname, docs_t &docs, intvector_t &ids)
 
 
 
-#define DATADIR "../data/rcv1/"
+#define DATADIR "../../data/rcv1/"
 
 int 
 main(int, const char**)
