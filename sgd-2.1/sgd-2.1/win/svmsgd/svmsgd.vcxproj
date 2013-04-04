@@ -97,6 +97,9 @@
     <ClCompile Include="..\..\lib\timer.cpp" />
     <ClCompile Include="..\..\lib\vectors.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\..\svm\README.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

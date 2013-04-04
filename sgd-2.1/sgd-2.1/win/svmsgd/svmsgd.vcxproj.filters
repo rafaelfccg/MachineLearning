@@ -31,4 +31,7 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\..\svm\README.txt" />
+  </ItemGroup>
 </Project>
