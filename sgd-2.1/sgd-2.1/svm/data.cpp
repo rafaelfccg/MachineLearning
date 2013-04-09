@@ -63,8 +63,10 @@ load_datafile_sub(istream &f, bool binary, const char *fname,
               if (d > 0 && d != 1.0)
                 x.scale(1.0 / sqrt(d)); 
             }
+#ifndef MULTICLASS
           if (y != +1 && y != -1)
             assertfail("Label should be +1 or -1.");
+#endif
           xp.push_back(x);
           yp.push_back(y);
           if (y > 0)

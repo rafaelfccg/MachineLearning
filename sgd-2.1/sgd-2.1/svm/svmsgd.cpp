@@ -33,6 +33,8 @@
 
 using namespace std;
 
+
+
 // ---- Loss function
 
 // Compile with -DLOSS=xxxx to define the loss function.
@@ -332,6 +334,108 @@ config(const char *progname)
        << endl;
 }
 
+//////////////////////////////////////////////////////////////////////////
+// wrapper for multi-class svm
+//////////////////////////////////////////////////////////////////////////
+int GetMaxLabel(const yvec_t& ytrain)
+{
+	// labels must be from 0
+	double max_label = 0;
+	for (size_t i=0; i<ytrain.size(); i++)
+	{
+		if(ytrain[i] > max_label)
+			max_label = ytrain[i];
+	}
+
+	return (int)max_label;
+}
+
+bool SetupLabelsForClass(const yvec_t& ytrain_in, yvec_t& ytrain_out, int pos_label)
+{
+	ytrain_out = ytrain_in;
+	for(size_t i=0; i<ytrain_out.size(); i++)
+	{
+		if(ytrain_out[i] == pos_label)
+			ytrain_out[i] = 1;
+		else
+			ytrain_out[i] = -1;
+	}
+	
+	return true;
+}
+
+bool train_Multiclass(int imin, int imax, const xvec_t &xp, const yvec_t &yp, const char *prefix, 
+					  double label_num, vector<SvmSgd>& svms)
+{
+	if(svms.size() != label_num)
+		return false;
+
+	// train svm for each class
+	for(int i=0; i<label_num; i++)
+	{
+		yvec_t new_labels;
+		SetupLabelsForClass(yp, new_labels, i);
+
+		// train
+		svms[i].train(imin, imax, xp, new_labels, prefix);
+	}
+
+	return true;
+}
+
+double testOne_Multiclass(vector<SvmSgd>& svms, const SVector &x, double y, double *pnerr)
+{
+	double max_s = 0;
+	double max_cls_id = -1;
+	
+	for(size_t i=0; i<svms.size(); i++)
+	{
+		double ploss=0, nerr=0;
+		double s = svms[i].testOne(x, y, &ploss, &nerr);
+		if(max_cls_id == -1)
+		{
+			max_s = s;
+			max_cls_id = 0;
+		}
+		else
+		{
+			if(s > max_s)
+			{
+				max_s = s;
+				max_cls_id = i;
+			}
+		}
+	}
+
+	if( y != max_cls_id )
+		*pnerr += 1;
+
+	return max_cls_id;
+}
+
+
+bool test_Multiclass(vector<SvmSgd>& svms, int imin, int imax, const xvec_t &xp, const yvec_t &yp, const char* prefix)
+{
+	cout << prefix << "Testing multiclass on [" << imin << ", " << imax << "]." << endl;
+	if(imin > imax)
+		return false;
+
+	double nerr = 0;
+	double loss = 0;
+	for (int i=imin; i<=imax; i++)
+		testOne_Multiclass(svms, xp.at(i), yp.at(i), &nerr);
+	nerr = nerr / (imax - imin + 1);
+
+	cout << " Misclassification=" << setprecision(4) << 100 * nerr << "%." 
+		<< endl;
+
+	return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+
+
 // --- main function
 
 int dims;
@@ -354,6 +458,9 @@ int main(int argc, const char **argv)
   int imax = xtrain.size() - 1;
   int tmin = 0;
   int tmax = xtest.size() - 1;
+
+#ifndef MULTICLASS
+
   SvmSgd svm(dims, lambda);
   Timer timer;
   // determine eta0 using sample
@@ -375,5 +482,41 @@ int main(int argc, const char **argv)
       if (tmax >= tmin)
         svm.test(tmin, tmax, xtest, ytest, "test:  ");
     }
+
+#else
+
+  int max_train_label;
+  max_train_label = GetMaxLabel(ytrain);
+  // determine eta0 using sample
+  int smin = 0;
+  int smax = imin + min(1000, imax);
+  
+  vector<SvmSgd> svms;
+  for(size_t i=0; i<max_train_label+1; i++)
+  {
+	  SvmSgd svm(dims, lambda);
+	  svm.determineEta0(smin, smax, xtrain, ytrain);
+	  svms.push_back(svm);
+  }
+
+  // train
+  Timer timer;
+  for(int i=0; i<epochs; i++)
+  {
+	  cout << "--------- Epoch " << i+1 << "." << endl;
+	  timer.start();
+	  train_Multiclass(imin, imax, xtrain, ytrain, "Multiclass train: ", max_train_label+1, svms);
+	  timer.stop();
+	  cout << "Total training time " << setprecision(6) 
+		  << timer.elapsed() << " secs." << endl;
+	  test_Multiclass(svms, imin, imax, xtrain, ytrain, "Train: ");
+	  if (tmax >= tmin)
+		  test_Multiclass(svms, tmin, tmax, xtest, ytest, "Test: ");
+  }
+
+
+#endif
   return 0;
 }
+
+
