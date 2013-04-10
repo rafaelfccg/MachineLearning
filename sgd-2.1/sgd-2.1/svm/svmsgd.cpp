@@ -516,6 +516,7 @@ int main(int argc, const char **argv)
 
 
 #endif
+  getchar();
   return 0;
 }
 

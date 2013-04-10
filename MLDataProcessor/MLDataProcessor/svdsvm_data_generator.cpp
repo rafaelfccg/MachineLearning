@@ -11,7 +11,7 @@ typedef vector<float> fvec;
 
 int main()
 {
-	string label_file = "F:\\Projects\\GitHub\\galaxy-zoo\\dev\\database_labels\\cleaned_labels\\task4_super-clean.txt";
+	string label_file = "F:\\Projects\\GitHub\\galaxy-zoo\\dev\\database_labels\\cleaned_labels\\task3_super-clean.txt";
 	string feat_dir = "I:\\classemes\\";
 
 	ifstream label_in(label_file);
@@ -55,8 +55,8 @@ int main()
 	cout<<"Input all samples"<<endl;
 
 	// select 80% samples from both sides as training file and left ones are test
-	ofstream train_out("classemes_train.txt");
-	ofstream test_out("classemes_test.txt");
+	ofstream train_out("classemes3_train.txt");
+	ofstream test_out("classemes3_test.txt");
 	// positive samples: CURRENTLY, JUST FOR BINARY TASK
 	for(int i=0; i<samples[0].size(); i++)
 	{
