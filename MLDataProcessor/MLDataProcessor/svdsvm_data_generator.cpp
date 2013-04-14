@@ -11,7 +11,7 @@ typedef vector<float> fvec;
 
 int main()
 {
-	string label_file = "F:\\Projects\\GitHub\\galaxy-zoo\\dev\\database_labels\\cleaned_labels\\task3_super-clean.txt";
+	string label_file = "F:\\Projects\\GitHub\\galaxy-zoo\\dev\\database_labels\\cleaned_labels\\task1_super-clean.txt";
 	string feat_dir = "I:\\classemes\\";
 
 	ifstream label_in(label_file);
@@ -33,6 +33,12 @@ int main()
 		// rows, cols (1), column vector
 		string feat_file = feat_dir + asset_id + "_classemes.dat";
 		ifstream in(feat_file.c_str(), ios::binary);
+		if(!in.good())
+		{
+			cout<<"No classemes file: "<<asset_id<<endl;
+			getchar();
+			return -1;
+		}
 		int rows, cols;
 		in.read((char*)&rows, 4);
 		in.read((char*)&cols, 4);
@@ -55,53 +61,34 @@ int main()
 	cout<<"Input all samples"<<endl;
 
 	// select 80% samples from both sides as training file and left ones are test
-	ofstream train_out("classemes3_train.txt");
-	ofstream test_out("classemes3_test.txt");
-	// positive samples: CURRENTLY, JUST FOR BINARY TASK
-	for(int i=0; i<samples[0].size(); i++)
+	ofstream train_out("classemes1_train.txt");
+	ofstream test_out("classemes1_test.txt");
+	// multi-class case; better switch to binary label (-1/+1) for binary task
+	for(int id=0; id<samples.size(); id++)
 	{
-		if(i<samples[0].size()*0.8)
+		// loop all samples
+		for(int i=0; i<samples[id].size(); i++)
 		{
-			train_out<<1<<" ";
-			for(int j=0; j<samples[0][i].size(); j++)
+			if(i<samples[id].size()*0.8)
 			{
-				train_out<<(j==0? "": " ")<<j<<":"<<samples[0][i][j];
+				train_out<<id<<" ";
+				for(int j=0; j<samples[id][i].size(); j++)
+				{
+					train_out<<(j==0? "": " ")<<j<<":"<<samples[0][i][j];
+				}
+				train_out<<endl;
 			}
-			train_out<<endl;
-		}
-		else
-		{
-			test_out<<1<<" ";
-			for(int j=0; j<samples[0][i].size(); j++)
+			else
 			{
-				test_out<<(j==0? "": " ")<<j<<":"<<samples[0][i][j];
+				test_out<<id<<" ";
+				for(int j=0; j<samples[id][i].size(); j++)
+				{
+					test_out<<(j==0? "": " ")<<j<<":"<<samples[id][i][j];
+				}
+				test_out<<endl;
 			}
-			test_out<<endl;
 		}
 	}
-	// negative samples
-	for(int i=0; i<samples[1].size(); i++)
-	{
-		if(i<samples[1].size()*0.8)
-		{
-			train_out<<-1<<" ";
-			for(int j=0; j<samples[1][i].size(); j++)
-			{
-				train_out<<(j==0? "": " ")<<j<<":"<<samples[1][i][j];
-			}
-			train_out<<endl;
-		}
-		else
-		{
-			test_out<<-1<<" ";
-			for(int j=0; j<samples[1][i].size(); j++)
-			{
-				test_out<<(j==0? "": " ")<<j<<":"<<samples[1][i][j];
-			}
-			test_out<<endl;
-		}
-	}
-	
 	
 
 	return 0;
