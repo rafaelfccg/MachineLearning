@@ -6,16 +6,16 @@ start_spams
 %%% train dictionary and get codes  
 %
 % load training samples
-gists = load('H:\MobileVisualSearch\gist\Data\Apple_Desktops.mat');
+gists = load('J:\MobileVisualSearch\gist\data\Apple_Desktops.mat');
 X = gists.gist'; % put sample in columns
 
 % load image name
-imgdir = 'H:\AmazonProductData\DemoDataSet_resized\Apple_Desktops\';
-imgnames = load('H:\MobileVisualSearch\gist\Data\Apple_Desktops_filenames.mat');
+imgdir = 'j:\AmazonProductData\DemoDataSet_resized\Apple_Desktops\';
+imgnames = load('j:\MobileVisualSearch\gist\data\Apple_Desktops_filenames.mat');
 imgnames = imgnames.readlist;
 
 % create results dir
-mkdir('H:\MobileVisualSearch\gist\Apple_Desktops\');
+mkdir('j:\MobileVisualSearch\gist\Apple_Desktops\');
 
 param.K=100;  % learns a dictionary with 100 elements
 param.lambda=0.15;

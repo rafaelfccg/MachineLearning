@@ -395,7 +395,7 @@ double testOne_Multiclass(vector<SvmSgd>& svms, const SVector &x, double y, doub
 		if(max_cls_id == -1)
 		{
 			max_s = s;
-			max_cls_id = 0;
+			max_cls_id = i;
 		}
 		else
 		{

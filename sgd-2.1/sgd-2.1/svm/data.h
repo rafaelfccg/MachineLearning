@@ -25,7 +25,7 @@
 typedef std::vector<SVector> xvec_t;
 typedef std::vector<double>  yvec_t;
 
-//#define MULTICLASS
+#define MULTICLASS
 
 void load_datafile(const char *filename, 
                    xvec_t &xp, yvec_t &yp, int &maxdim,
