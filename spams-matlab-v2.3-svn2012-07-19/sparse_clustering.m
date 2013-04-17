@@ -91,14 +91,11 @@ for i=1:size(training_objs,1)
     for j=1:size(data, 2)
         diff = repmat(data(:,j), 1, param.K) - D;
         diff = sqrt(sum(diff.^2,1));
-        % update for each cluster
-        for k=1:length(diff)
-            if diff(k)<best_img_dist(k)
-                best_img_dist(k) = diff(k);
-                best_img_id(k) = j;
-            end
-        end
         [min_dist, min_id] = min(diff);
+        if min_dist < best_img_dist(min_id)
+            best_img_dist(min_id) = min_dist;
+            best_img_id(min_id) = j;
+        end
         % copy it to dir
         copyfile([img_dir cur_cate_data.imgs{j,1}], group_dirs{min_id,1});
     end
@@ -107,7 +104,11 @@ for i=1:size(training_objs,1)
     dict_file = [res_cur_cluster_dir 'dict.mat'];
     save(dict_file, 'D');
     for j=1:param.K
-        copyfile([img_dir cur_cate_data.imgs{best_img_id(1,j), 1}], [res_cur_cluster_dir num2str(j) '.jpg']);
+        id = int32(j);
+        if best_img_id(1,id)<= 0
+            continue;
+        end
+        copyfile([img_dir cur_cate_data.imgs{best_img_id(1,id), 1}], [res_cur_cluster_dir num2str(id) '.jpg']);
     end
     
 end
