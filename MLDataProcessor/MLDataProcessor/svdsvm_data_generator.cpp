@@ -89,7 +89,7 @@ int main()
 			}
 			if(ftype== LBP)
 			{
-				string feat_file = feat_dir + asset_id + ".jpg.lbp";
+				string feat_file = lbp_dir + asset_id + ".jpg.lbp";
 				ifstream in(feat_file.c_str());
 				if(!in.good())
 				{
