@@ -11,10 +11,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{9DCFACBF-41C1-41F7-AE80-0A25AF861730}</ProjectGuid>
+    <ProjectName>svmsgd</ProjectName>
+    <ProjectGuid>{E3B3AB40-A363-4D2A-86D4-757C3C54AA83}</ProjectGuid>
     <RootNamespace>svmsgd</RootNamespace>
     <Keyword>Win32Proj</Keyword>
-    <ProjectName>svmsgd2</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -39,7 +39,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <_ProjectFileVersion>11.0.51106.1</_ProjectFileVersion>
+    <_ProjectFileVersion>11.0.60315.1</_ProjectFileVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
@@ -94,12 +94,9 @@
   <ItemGroup>
     <ClCompile Include="..\..\svm\data.cpp" />
     <ClCompile Include="..\..\lib\gzstream.cpp" />
+    <ClCompile Include="..\..\svm\svmsgd.cpp" />
     <ClCompile Include="..\..\lib\timer.cpp" />
     <ClCompile Include="..\..\lib\vectors.cpp" />
-    <ClCompile Include="..\svmsgd2\svmsgd.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="..\..\svm\README.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

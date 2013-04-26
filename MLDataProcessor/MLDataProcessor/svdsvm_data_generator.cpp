@@ -37,7 +37,7 @@ int main()
 	task_ids.push_back(11);
 	for(int k=0; k<task_ids.size(); k++)
 	{
-		sprintf_s(str, "F:\\Projects\\GitHub\\galaxy-zoo\\dev\\database_labels\\cleaned_labels\\task%d_super-clean.txt", task_ids[k]);
+		sprintf_s(str, "F:\\Projects\\GitHub\\galaxy-zoo\\dev\\database_labels\\cleaned_labels\\task%d_clean.txt", task_ids[k]);
 		string label_file(str);
 
 		ifstream label_in(label_file);
@@ -114,16 +114,16 @@ int main()
 		string testfile = "";
 		if(ftype == Classemes)
 		{
-			sprintf_s(str, "classemes%d_train.txt", task_ids[k]);
+			sprintf_s(str, "classemes%d_clean_train.txt", task_ids[k]);
 			trainfile = string(str);
-			sprintf_s(str, "classemes%d_test.txt", task_ids[k]);
+			sprintf_s(str, "classemes%d_clean_test.txt", task_ids[k]);
 			testfile = string(str);
 		}
 		if(ftype == LBP)
 		{
-			sprintf_s(str, "lbp%d_train.txt", task_ids[k]);
+			sprintf_s(str, "lbp%d_clean_train.txt", task_ids[k]);
 			trainfile = string(str);
-			sprintf_s(str, "lbp%d_test.txt", task_ids[k]);
+			sprintf_s(str, "lbp%d_clean_test.txt", task_ids[k]);
 			testfile = string(str);
 		}
 		ofstream train_out(trainfile.c_str());
