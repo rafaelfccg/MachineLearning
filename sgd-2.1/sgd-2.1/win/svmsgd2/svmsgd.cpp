@@ -22,6 +22,7 @@
 #include <map>
 #include <vector>
 #include <cstdlib>
+#include <algorithm>
 #include <cmath>
 
 #include "assert.h"
@@ -55,6 +56,8 @@ using namespace std;
 #ifndef REGULARIZED_BIAS
 # define REGULARIZED_BIAS 0
 #endif
+
+ofstream out;
 
 // ---- Plain stochastic gradient descent
 
@@ -418,6 +421,7 @@ double testOne_Multiclass(vector<SvmSgd>& svms, const SVector &x, double y, doub
 bool test_Multiclass(vector<SvmSgd>& svms, int imin, int imax, const xvec_t &xp, const yvec_t &yp, const char* prefix)
 {
 	cout << prefix << "Testing multiclass on [" << imin << ", " << imax << "]." << endl;
+	out << prefix << "Testing multiclass on [" << imin << ", " << imax << "]." << endl;
 	if(imin > imax)
 		return false;
 
@@ -429,10 +433,22 @@ bool test_Multiclass(vector<SvmSgd>& svms, int imin, int imax, const xvec_t &xp,
 
 	cout << " Misclassification=" << setprecision(4) << 100 * nerr << "%." 
 		<< endl;
+	out << " Misclassification=" << setprecision(4) << 100 * nerr << "%." 
+		<< endl;
 
 	return true;
 }
 
+
+// generate 0:n-1
+vector<int> generateArray(int n)
+{
+	vector<int> nums(n);
+	for(int i=0; i<n; i++)
+		nums[i] = i;
+
+	return nums;
+}
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -445,6 +461,9 @@ yvec_t ytrain;
 xvec_t xtest;
 yvec_t ytest;
 
+
+
+
 int main(int argc, const char **argv)
 {
   parse(argc, argv);
@@ -454,69 +473,136 @@ int main(int argc, const char **argv)
   if (testfile)
     load_datafile(testfile, xtest, ytest, dims, normalize);
   cout << "# Number of features " << dims << "." << endl;
+
   // prepare svm
   int imin = 0;
   int imax = xtrain.size() - 1;
   int tmin = 0;
   int tmax = xtest.size() - 1;
 
-#ifndef MULTICLASS
-
-  SvmSgd svm(dims, lambda);
-  Timer timer;
-  // determine eta0 using sample
-  int smin = 0;
-  int smax = imin + min(1000, imax);
-  timer.start();
-  svm.determineEta0(smin, smax, xtrain, ytrain);
-  timer.stop();
-  // train
-  for(int i=0; i<epochs; i++)
-    {
-      cout << "--------- Epoch " << i+1 << "." << endl;
-      timer.start();
-      svm.train(imin, imax, xtrain, ytrain);
-      timer.stop();
-      cout << "Total training time " << setprecision(6) 
-           << timer.elapsed() << " secs." << endl;
-      svm.test(imin, imax, xtrain, ytrain, "train: ");
-      if (tmax >= tmin)
-        svm.test(tmin, tmax, xtest, ytest, "test:  ");
-    }
-
-#else
+  string outfile = "lbp_task10_super.txt";
+  out.open(outfile.c_str());
+  if(!out.is_open())
+	  return -1;
 
   int max_train_label;
   max_train_label = GetMaxLabel(ytrain);
-  // determine eta0 using sample
-  int smin = 0;
-  int smax = imin + min(1000, imax);
-  
-  vector<SvmSgd> svms;
-  for(size_t i=0; i<max_train_label+1; i++)
+
+  // organize all data into class-wise subgroups
+  map<int, xvec_t> class_samples;
+	// training
+	for(size_t j=0; j<ytrain.size(); j++)
+	{
+		int cur_label = (int)ytrain[j];
+		class_samples[cur_label].push_back(xtrain[j]);
+	}
+	// testing
+	for(size_t j=0; j<ytest.size(); j++)
+	{
+		int cur_label = (int)ytest[j];
+		class_samples[cur_label].push_back(xtest[j]);
+	}
+
+
+
+  // shuffle dataset to generate multiple random training set and testing set
+  int trial_num = 20;
+  std::srand ( unsigned ( std::time(0) ) );
+  for(int i=0; i<trial_num; i++)
   {
+	  cout<<endl<<"Trial: "<<i<<endl<<endl;
+	  out<<endl<<"Trial: "<<i<<endl<<endl;
+
+	  // construct new training and testing set
+	  xtrain.clear();
+	  ytrain.clear();
+	  xtest.clear();
+	  ytest.clear();
+
+	  for(map<int, xvec_t>::iterator pi=class_samples.begin(); pi!=class_samples.end(); pi++)
+	  {
+		  int cur_label = pi->first;
+		  const xvec_t& cur_samps = pi->second;
+		  vector<int> ids = generateArray(cur_samps.size());
+		  // random shuffle
+		  std::random_shuffle(ids.begin(), ids.end());
+
+		  // 80% as training samples; 20% as testing samples
+		  for(int k=0; k<ids.size(); k++)
+		  {
+			  if(k<ids.size()*0.8)
+			  {
+				  xtrain.push_back(cur_samps[ids[k]]);
+				  ytrain.push_back(cur_label);
+			  }
+			  else
+			  {
+				  xtest.push_back(cur_samps[ids[k]]);
+				  ytest.push_back(cur_label);
+			  }
+		  }
+	  }
+
+	#ifndef MULTICLASS
+
 	  SvmSgd svm(dims, lambda);
-	  svm.determineEta0(smin, smax, xtrain, ytrain);
-	  svms.push_back(svm);
-  }
-
-  // train
-  Timer timer;
-  for(int i=0; i<epochs; i++)
-  {
-	  cout << "--------- Epoch " << i+1 << "." << endl;
+	  Timer timer;
+	  // determine eta0 using sample
+	  int smin = 0;
+	  int smax = imin + min(1000, imax);
 	  timer.start();
-	  train_Multiclass(imin, imax, xtrain, ytrain, "Multiclass train: ", max_train_label+1, svms);
+	  svm.determineEta0(smin, smax, xtrain, ytrain);
 	  timer.stop();
-	  cout << "Total training time " << setprecision(6) 
-		  << timer.elapsed() << " secs." << endl;
-	  test_Multiclass(svms, imin, imax, xtrain, ytrain, "Train: ");
-	  if (tmax >= tmin)
-		  test_Multiclass(svms, tmin, tmax, xtest, ytest, "Test: ");
+	  // train
+	  for(int i=0; i<epochs; i++)
+		{
+		  cout << "--------- Epoch " << i+1 << "." << endl;
+		  timer.start();
+		  svm.train(imin, imax, xtrain, ytrain);
+		  timer.stop();
+		  cout << "Total training time " << setprecision(6) 
+			   << timer.elapsed() << " secs." << endl;
+		  svm.test(imin, imax, xtrain, ytrain, "train: ");
+		  if (tmax >= tmin)
+			svm.test(tmin, tmax, xtest, ytest, "test:  ");
+		}
+
+	#else
+
+	  // determine eta0 using sample
+	  int smin = 0;
+	  int smax = imin + min(1000, imax);
+  
+	  vector<SvmSgd> svms;
+	  for(size_t i=0; i<max_train_label+1; i++)
+	  {
+		  SvmSgd svm(dims, lambda);
+		  svm.determineEta0(smin, smax, xtrain, ytrain);
+		  svms.push_back(svm);
+	  }
+
+	  // train
+	  Timer timer;
+	  for(int i=0; i<epochs; i++)
+	  {
+		  cout << "--------- Epoch " << i+1 << "." << endl;
+		  out << "--------- Epoch " << i+1 << "." << endl;
+		  timer.start();
+		  train_Multiclass(imin, imax, xtrain, ytrain, "Multiclass train: ", max_train_label+1, svms);
+		  timer.stop();
+		  cout << "Total training time " << setprecision(6) 
+			  << timer.elapsed() << " secs." << endl;
+		  out << "Total training time " << setprecision(6) 
+			  << timer.elapsed() << " secs." << endl;
+		  test_Multiclass(svms, imin, imax, xtrain, ytrain, "Train: ");
+		  if (tmax >= tmin)
+			  test_Multiclass(svms, tmin, tmax, xtest, ytest, "Test: ");
+	  }
+	#endif
+
   }
 
 
-#endif
   getchar();
   return 0;
 }
