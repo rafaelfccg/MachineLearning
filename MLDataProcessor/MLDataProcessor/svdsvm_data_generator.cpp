@@ -20,11 +20,11 @@ int main()
 	string feat_dir = "I:\\classemes\\";
 	string lbp_dir = "I:\\Zoo2_lbp_all\\";
 
-	FeatType ftype = LBP;
+	FeatType ftype = Classemes;
 
 	char str[100];
 	vector<int> task_ids;
-	task_ids.push_back(1);
+	/*task_ids.push_back(1);
 	task_ids.push_back(2);
 	task_ids.push_back(3);
 	task_ids.push_back(4);
@@ -32,9 +32,9 @@ int main()
 	task_ids.push_back(6);
 	task_ids.push_back(7);
 	task_ids.push_back(8);
-	task_ids.push_back(9);
+	task_ids.push_back(9);*/
 	task_ids.push_back(10);
-	task_ids.push_back(11);
+	//task_ids.push_back(11);
 	for(int k=0; k<task_ids.size(); k++)
 	{
 		sprintf_s(str, "F:\\Projects\\GitHub\\galaxy-zoo\\dev\\database_labels\\cleaned_labels\\task%d_clean.txt", task_ids[k]);

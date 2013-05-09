@@ -162,9 +162,9 @@ SvmSgd::train(int imin, int imax, const xvec_t &xp, const yvec_t &yp, const char
       trainOne(xp.at(i), yp.at(i), eta);
       t += 1;
     }
-  cout << prefix << setprecision(6) << "wNorm=" << wnorm();
+  //cout << prefix << setprecision(6) << "wNorm=" << wnorm();
 #if BIAS
-  cout << " wBias=" << wBias;
+  //cout << " wBias=" << wBias;
 #endif
   cout << endl;
 }
@@ -480,7 +480,7 @@ int main(int argc, const char **argv)
   int tmin = 0;
   int tmax = xtest.size() - 1;
 
-  string outfile = "lbp_task10_super.txt";
+  string outfile = "class_task5.txt";
   out.open(outfile.c_str());
   if(!out.is_open())
 	  return -1;
@@ -506,7 +506,7 @@ int main(int argc, const char **argv)
 
 
   // shuffle dataset to generate multiple random training set and testing set
-  int trial_num = 20;
+  int trial_num = 5;
   std::srand ( unsigned ( std::time(0) ) );
   for(int i=0; i<trial_num; i++)
   {
