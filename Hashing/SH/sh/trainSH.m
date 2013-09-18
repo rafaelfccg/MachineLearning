@@ -20,8 +20,10 @@ X = X * pc; % no need to remove the mean
 
 
 % 2) fit uniform distribution
-mn = prctile(X, 5);  mn = min(X)-eps;
-mx = prctile(X, 95);  mx = max(X)+eps;
+mn = prctile(X, 5);  
+mn = min(X)-eps;
+mx = prctile(X, 95);  
+mx = max(X)+eps;
 
 
 % 3) enumerate eigenfunctions

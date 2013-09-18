@@ -6,6 +6,10 @@
 %    data points are row vectors.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% all data vectors are row based
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 1) Create toy data:
 % some parameters
 Ntraining = 3000; % number training samples
@@ -14,11 +18,12 @@ averageNumberNeighbors = 50; % number of groundtruth neighbors on training set (
 aspectratio = 0.5; % aspect ratio between the two axis
 loopbits = [2 4 8 16 32]; % try different number of bits for coding
 
-% uniform distribution
-Xtraining = rand([Ntraining,2]); 
-Xtraining(:,2) = aspectratio*Xtraining(:,2);
-Xtest = rand([Ntest,2]);  
-Xtest(:,2) = aspectratio*Xtest(:,2);
+% uniform distribution with larger range
+data_range = 100;
+Xtraining = rand([Ntraining,2]) * data_range; 
+Xtraining(:,2) = aspectratio * Xtraining(:,2);
+Xtest = rand([Ntest,2]) * data_range; 
+Xtest(:,2) = aspectratio * Xtest(:,2);
 
 % define ground-truth neighbors (this is only used for the evaluation):
 DtrueTraining = distMat(Xtraining);
@@ -26,9 +31,40 @@ DtrueTestTraining = distMat(Xtest,Xtraining); % size = [Ntest x Ntraining]
 Dball = sort(DtrueTraining,2);
 Dball = mean(Dball(:,averageNumberNeighbors));  % mean distance for neighbors in training set
 WtrueTestTraining = DtrueTestTraining < Dball;  % neighbors for testing sampels in training set
+TrainingNeighbors = DtrueTraining < Dball;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% 2) demo spectral hashing
+% prepare parameters
+
+feat_dim = 2;
+bit_num = 16;
+
+OWHParams.nbits = bit_num;
+OWHParams.prev_weights = ones(1, OWHParams.nbits) / OWHParams.nbits;
+OWHParams.cur_weights = OWHParams.prev_weights;
+OWHParams.lamda = 0.5;
+OWHParams.eta = 0.5;
+
+% randomly generate functions
+
+LSHCoder.funcs = randn(bit_num, feat_dim);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 2) demo online weighted hashing
+
+% generate base hash code for each sample
+train_codes = compress2Base(Xtraining, LSHCoder, 'LSH');
+test_codes = compress2Base(Xtest, LSHCoder, 'LSH');
+
+% learn weights in online fasion
+% construct triplets
+
+
+% compute weighted hamming distance
+testWDist = weightedHam(test_codes, train_codes, OWHParams.cur_weights);
+
+
+
 clear SHparam score
 colors = 'cbmrg'; 
 i = 0;
