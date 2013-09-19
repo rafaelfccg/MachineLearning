@@ -33,6 +33,14 @@ Dball = mean(Dball(:,averageNumberNeighbors));  % mean distance for neighbors in
 WtrueTestTraining = DtrueTestTraining < Dball;  % neighbors for testing sampels in training set
 TrainingNeighbors = DtrueTraining < Dball;
 
+train_pairs = cell(size(TrainingNeighbors,1), 2);
+for i=1:size(TrainingNeighbors,1)
+    
+    train_pairs{i,1} = find(TrainingNeighbors(i,:) == 1);
+    train_pairs{i,2} = find(TrainingNeighbors(i,:) == 0);
+    
+end
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % prepare parameters
 
@@ -42,8 +50,10 @@ bit_num = 16;
 OWHParams.nbits = bit_num;
 OWHParams.prev_weights = ones(1, OWHParams.nbits) / OWHParams.nbits;
 OWHParams.cur_weights = OWHParams.prev_weights;
-OWHParams.lamda = 0.5;
-OWHParams.eta = 0.5;
+OWHParams.lamda = 0.1;
+OWHParams.eta = 0.05;
+
+old_params = OWHParams;
 
 % randomly generate functions
 
@@ -57,57 +67,50 @@ train_codes = compress2Base(Xtraining, LSHCoder, 'LSH');
 test_codes = compress2Base(Xtest, LSHCoder, 'LSH');
 
 % learn weights in online fasion
-% construct triplets
 
-
-% compute weighted hamming distance
-testWDist = weightedHam(test_codes, train_codes, OWHParams.cur_weights);
-
-
-
-clear SHparam score
-colors = 'cbmrg'; 
-i = 0;
-m = ceil(rand*Ntest); % random test sample for visualization
-
-for nb = loopbits
-    i = i+1;
-    SHparam.nbits = nb; % number of bits to code each sample
-
-    % training
-    SHparam = trainSH(Xtraining, SHparam);
-
-    % compress training and test set
-    [B1,U1] = compressSH(Xtraining, SHparam);
-    [B2,U2] = compressSH(Xtest, SHparam);
-
-    % example query
-    Dhamm = hammingDist(B2, B1);
-    %    size(Dhamm) = [Ntest x Ntraining]
-
-    % evaluation
-    score(:,i) = evaluation(WtrueTestTraining, Dhamm, 1, 'o-', 'color', colors(i));
-
-    % Visualization
-    figure
-    subplot(211)
-    show2dfun(Xtraining, -double(hammingDist(B2(m,:), B1)')); 
-    colormap([1 0 0; jet(nb)])
-    title({sprintf('Hamming distance to a test sample with %d bits', nb), 
-        'red = unasigned'})
-    subplot(212)
-    show2dfun(Xtraining, WtrueTestTraining(m,:)');
-    title('Ground truth neighbors for the test sample')
-    colormap(jet(nb))
+for i=1:3000
+    
+    % randomly pick a triplet (training sample, positive sample, negative sample)
+    train_id = max(1, int32( rand(1) * size(train_codes, 1) ));
+    pos_id = max(1, int32( rand(1) * size(train_pairs{train_id, 1}, 2) ));
+    pos_id = int32( train_pairs{train_id, 1}(1, pos_id) );
+    neg_id = max(1, int32( rand(1) * size(train_pairs{train_id, 2}, 2) ));
+    neg_id = int32( train_pairs{train_id, 2}(1, neg_id) );
+    
+    triplet.query_code = train_codes(train_id, :);
+    triplet.pos_code = train_codes(pos_id, :);
+    triplet.neg_code = train_codes(neg_id, :);
+    
+    % update weight
+    OWHParams = weightLearner(OWHParams, triplet);
+    
+    %disp(OWHParams.cur_weights);
+    disp(['Finish ' num2str(i) 'th update.']);
+    
 end
 
-% Show eigenfunctions
-figure
-show2dfun(Xtraining, U1);
+%disp(old_params.cur_weights);
 
-% Show eigenfunctions
-figure
-plot(loopbits, score(2,:))
-xlabel('number of bits')
-ylabel('precision for hamming ball 2')
+% evaluation
+% check best neighbors with weighted hamming distance and ground truth
+% neighbors
+
+% compute lsh hamming distance
+lsh_dist = weightedHam(train_codes, train_codes, ones(1, bit_num));
+[lsh_sorted_dist, lsh_sorted_idx] = sort(lsh_dist, 2);
+
+lsh_inter = intersect(lsh_sorted_idx(1, find(lsh_sorted_dist(i, :)==0)), train_pairs{1,1});
+
+% compute weighted hamming distance
+owh_dist = weightedHam(train_codes, train_codes, OWHParams.cur_weights);
+[owh_sorted_dist, owh_sorted_idx] = sort(owh_dist, 2);
+
+% compute precision-recall with ground truth
+% precision
+for i=1:size(owh_sorted_idx, 1)
+    
+    owh_inter = intersect(owh_sorted_idx(1, find(owh_sorted_dist(i, :)==0)), train_pairs{1,1});
+    disp(size(inter,1) / size(train_pairs{i,1},1));
+    
+end
 

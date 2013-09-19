@@ -7,7 +7,7 @@ distMat = zeros(size(code1, 1), size(code2, 1));
 for i=1:size(code1, 1)
     for j=1:size(code2, 1)
         
-        distMat(i,j) = weights .* ( code1(i,:) - code2(j,:) ).^2;
+        distMat(i,j) = ( double( code1(i,:)-code2(j,:) ) ).^2 * weights';
         
     end
 end
