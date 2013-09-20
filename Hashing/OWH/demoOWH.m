@@ -20,10 +20,11 @@ loopbits = [2 4 8 16 32]; % try different number of bits for coding
 
 % uniform distribution with larger range
 % random high dimension data
-feat_dim = 30;
-Xtraining = rand([Ntraining, feat_dim]) * data_range; 
+feat_dim = 100;
+data_range = 100;
+Xtraining = rand([Ntraining, feat_dim]) .* data_range; 
 %Xtraining(:,2) = aspectratio * Xtraining(:,2);
-Xtest = rand([Ntest, feat_dim]) * data_range; 
+Xtest = rand([Ntest, feat_dim]) .* data_range; 
 %Xtest(:,2) = aspectratio * Xtest(:,2);
 
 % define ground-truth neighbors (this is only used for the evaluation):
@@ -34,8 +35,8 @@ DtrueTestTraining = distMat(Xtest,Xtraining); % size = [Ntest x Ntraining]
 %WtrueTestTraining = DtrueTestTraining < Dball;  % neighbors for testing sampels in training set
 %TrainingNeighbors = DtrueTraining < Dball;
 
-train_pairs = cell(size(TrainingNeighbors,1), 2);
-for i=1:size(TrainingNeighbors,1)
+train_pairs = cell(size(Xtraining, 1), 2);
+for i=1:size(Xtraining,1)
     
     train_pairs{i,1} = gt_sorted_idx(i, 1:averageNumberNeighbors);
     train_pairs{i,2} = gt_sorted_idx(i, averageNumberNeighbors:end);
@@ -48,9 +49,10 @@ end
 bit_num = 32;
 
 OWHParams.nbits = bit_num;
-OWHParams.prev_weights = ones(1, OWHParams.nbits) / OWHParams.nbits;
-OWHParams.cur_weights = OWHParams.prev_weights;
-OWHParams.lamda = 0.1;
+OWHParams.prev_prev_weights = ones(1, OWHParams.nbits) / OWHParams.nbits;
+OWHParams.prev_weights = ones(1, OWHParams.nbits) / OWHParams.nbits; % t, current weights
+OWHParams.cur_weights = OWHParams.prev_weights; % t+1, latest weights
+OWHParams.lamda = 0.01;
 OWHParams.eta = 0.05;
 
 old_params = OWHParams;
@@ -68,7 +70,7 @@ test_codes = compress2Base(Xtest, LSHCoder, 'LSH');
 
 % learn weights in online fasion
 
-for i=1:3000
+for i=1:5000
     
     % randomly pick a triplet (training sample, positive sample, negative sample)
     train_id = max(1, int32( rand(1) * size(train_codes, 1) ));
