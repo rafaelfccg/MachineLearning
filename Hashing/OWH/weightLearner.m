@@ -2,6 +2,9 @@ function owh_params = weightLearner( owh_params, triplet )
 %WEIGHTLEARNER Summary of this function goes here
 %   update weight given new similar or dissimilar pairs
 
+showCostCurve = 0;
+
+
 code_diff_pos = (triplet.query_code - triplet.pos_code).^2;
 code_diff_neg = (triplet.query_code - triplet.neg_code).^2;
 
@@ -15,7 +18,9 @@ delta = 0.00001;
 
 disp(['Start cost: ' num2str(ComputeCost(owh_params, triplet))]);
 
-for t=1:100
+costs = [];
+
+for t=1:1000
     
     old_weights = owh_params.cur_weights;
     
@@ -33,11 +38,18 @@ for t=1:100
     end
     
     cur_cost = ComputeCost(owh_params, triplet);
+    costs = [costs cur_cost];
     %disp(['Cost for iteraton ' num2str(t) ' : ' num2str(cur_cost)]);
     
 end
 
 owh_params.prev_weights = owh_params.cur_weights;
+
+if showCostCurve == 1
+    % visualize cost change
+    plot(1:size(costs,2), costs, 'r-')
+    pause
+end
 
 if(sum(isnan(owh_params.cur_weights)) > 0)
     disp('Error');
