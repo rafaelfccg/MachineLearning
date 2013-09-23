@@ -118,23 +118,22 @@ lsh_dist = weightedHam(train_codes, train_codes, ones(1, bit_num));
 [lsh_sorted_dist, lsh_sorted_idx] = sort(lsh_dist, 2);
 lsh_inters = zeros(1, averageNumberNeighbors);
 for i=1:averageNumberNeighbors
-    lsh_inters(1,i) = size( intersect( lsh_sorted_idx(1, 1:i), train_pairs{1,1}(1, 1:i) ), 2 ) / averageNumberNeighbors;
+    lsh_inters(1,i) = intersect( lsh_sorted_idx(1, 1:i), train_pairs{1,1}(1, 1:i) );
 end
+
 
 
 % compute weighted hamming distance
 owh_dist = weightedHam(train_codes, train_codes, OWHParams.cur_weights);
 [owh_sorted_dist, owh_sorted_idx] = sort(owh_dist, 2);
-owh_inters = zeros(1, averageNumberNeighbors);
-for i=1:averageNumberNeighbors
-    owh_inters(1,i) = size( intersect( owh_sorted_idx(1, 1:i), train_pairs{1,1}(1, 1:i) ), 2 ) / averageNumberNeighbors;
-end
+owh_inters = zeros(1, 1:averageNumber);
+owh_inter = intersect( owh_sorted_idx(1, 1:averageNumberNeighbors), train_pairs{1,1} );
 
-% draw precision curve
-plot(1:averageNumberNeighbors, lsh_inters(1,:), 'r-')
-hold on
-plot(1:averageNumberNeighbors, owh_inters(1,:), 'g-')
-hold on
-legend('lsh', 'owh')
-pause
+% compute precision-recall with ground truth
+% precision
+for i=1:size(owh_sorted_idx, 1)
+    
+    disp(size(inter,1) / size(train_pairs{i,1},1));
+    
+end
 
