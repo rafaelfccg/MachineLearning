@@ -23,6 +23,7 @@ loopbits = [2 4 8 16 32]; % try different number of bits for coding
 feat_dim = 100;
 data_range = 100;
 Xtraining = rand([Ntraining, feat_dim]) .* data_range;
+Xtraining(Ntraining/2:end, :) = Xtraining(Ntraining/2:end, :) + 50;
 Xtraining(:,2) = aspectratio * Xtraining(:,2);
 Xtest = rand([Ntest, feat_dim]) .* data_range / 2; 
 %Xtest(:,2) = aspectratio * Xtest(:,2);
@@ -55,6 +56,7 @@ OWHParams.prev_weights = ones(1, OWHParams.nbits); % t, current weights
 OWHParams.cur_weights = OWHParams.prev_weights; % t+1, latest weights
 OWHParams.lamda = 0.1;
 OWHParams.eta = 0.05;
+OWHParams.dist_margin = 1;
 
 old_params = OWHParams;
 
@@ -75,13 +77,13 @@ test_codes = compress2Base(Xtest, LSHCoder, 'LSH');
 triplets = cell(averageNumberNeighbors*(Ntraining-averageNumberNeighbors), 1);
 cnt = 1;
 for i=1:2:size(train_pairs{1,1},2)
-    for j=1:2:size(train_pairs{1,2},2)
+    for j=1:3:size(train_pairs{1,2},2)
         triplets{cnt,1}.query_code = train_codes(1, :);
         triplets{cnt,1}.query_id = 1;
         triplets{cnt,1}.pos_code = train_codes(train_pairs{1,1}(1,i), :);
-        triplets{cnt,1}.pos_id = i;
+        triplets{cnt,1}.pos_id = train_pairs{1,1}(1,i);
         triplets{cnt,1}.neg_code = train_codes(train_pairs{1,2}(1,j), :);
-        triplets{cnt,1}.neg_id = j;
+        triplets{cnt,1}.neg_id = train_pairs{1,2}(1,j);
         cnt = cnt + 1;
     end
 end
@@ -136,6 +138,9 @@ for i=1:Ntraining
 end
 
 % draw precision curve
+xlabel('Recall')
+ylabel('Precision')
+hold on
 plot(lsh_inters(2,:), lsh_inters(1,:), 'r-')
 hold on
 plot(owh_inters(2,:), owh_inters(1,:), 'b-')
