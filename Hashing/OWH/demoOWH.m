@@ -37,8 +37,9 @@ DtrueTestTraining = distMat(Xtest,Xtraining); % size = [Ntest x Ntraining]
 
 train_pairs = cell(size(Xtraining, 1), 2);
 for i=1:size(Xtraining,1)
-    
+    % neighbors
     train_pairs{i,1} = gt_sorted_idx(i, 1:averageNumberNeighbors);
+    % non-neighbors
     train_pairs{i,2} = gt_sorted_idx(i, averageNumberNeighbors:end);
     
 end
@@ -50,10 +51,10 @@ bit_num = 32;
 
 OWHParams.nbits = bit_num;
 OWHParams.prev_prev_weights = ones(1, OWHParams.nbits) / OWHParams.nbits;
-OWHParams.prev_weights = ones(1, OWHParams.nbits) / OWHParams.nbits; % t, current weights
+OWHParams.prev_weights = ones(1, OWHParams.nbits); % t, current weights
 OWHParams.cur_weights = OWHParams.prev_weights; % t+1, latest weights
-OWHParams.lamda = 0.01;
-OWHParams.eta = 0.04;
+OWHParams.lamda = 0.1;
+OWHParams.eta = 0.05;
 
 old_params = OWHParams;
 
@@ -116,24 +117,28 @@ disp(OWHParams.cur_weights);
 % compute lsh hamming distance
 lsh_dist = weightedHam(train_codes, train_codes, ones(1, bit_num));
 [lsh_sorted_dist, lsh_sorted_idx] = sort(lsh_dist, 2);
-lsh_inters = zeros(1, averageNumberNeighbors);
-for i=1:averageNumberNeighbors
-    lsh_inters(1,i) = size( intersect( lsh_sorted_idx(1, 1:i), train_pairs{1,1}(1, 1:i) ), 2 ) / averageNumberNeighbors;
+lsh_inters = zeros(2, Ntraining);
+for i=1:Ntraining
+    % precision
+    lsh_inters(1,i) = size( intersect( lsh_sorted_idx(1, 1:i), train_pairs{1,1}(1, :) ), 2 ) / i;
+    % recall
+    lsh_inters(2,i) = size( intersect( lsh_sorted_idx(1, 1:i), train_pairs{1,1}(1, :) ), 2 ) / averageNumberNeighbors;
 end
 
 
 % compute weighted hamming distance
 owh_dist = weightedHam(train_codes, train_codes, OWHParams.cur_weights);
 [owh_sorted_dist, owh_sorted_idx] = sort(owh_dist, 2);
-owh_inters = zeros(1, averageNumberNeighbors);
-for i=1:averageNumberNeighbors
-    owh_inters(1,i) = size( intersect( owh_sorted_idx(1, 1:i), train_pairs{1,1}(1, 1:i) ), 2 ) / averageNumberNeighbors;
+owh_inters = zeros(2, Ntraining);
+for i=1:Ntraining
+    owh_inters(1,i) = size( intersect( owh_sorted_idx(1, 1:i), train_pairs{1,1}(1, :) ), 2 ) / i;
+    owh_inters(2,i) = size( intersect( owh_sorted_idx(1, 1:i), train_pairs{1,1}(1, :) ), 2 ) / averageNumberNeighbors;
 end
 
 % draw precision curve
-plot(1:averageNumberNeighbors, lsh_inters(1,:), 'r-')
+plot(lsh_inters(2,:), lsh_inters(1,:), 'r-')
 hold on
-plot(1:averageNumberNeighbors, owh_inters(1,:), 'g-')
+plot(owh_inters(2,:), owh_inters(1,:), 'b-')
 hold on
 legend('lsh', 'owh')
 pause

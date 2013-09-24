@@ -8,19 +8,19 @@ showCostCurve = 0;
 code_diff_pos = (triplet.query_code - triplet.pos_code).^2;
 code_diff_neg = (triplet.query_code - triplet.neg_code).^2;
 
-hinge_loss = double(code_diff_pos - code_diff_neg) * owh_params.cur_weights' + 0.5;
-if hinge_loss < 0
+hinge_loss = double(code_diff_pos - code_diff_neg) * owh_params.cur_weights' + 2;
+if hinge_loss <= 0
     return;
 end
 
 % do iteration until converge
-delta = 0.00001;
+delta = 0.0000001;
 
 disp(['Start cost: ' num2str(ComputeCost(owh_params, triplet))]);
 
 costs = [];
 
-for t=1:1000
+for t=1:10000
     
     old_weights = owh_params.cur_weights;
     
@@ -29,7 +29,7 @@ for t=1:1000
     % update weights
     owh_params.cur_weights = owh_params.cur_weights .* exp(-owh_params.eta * grad);
     % normalize weights
-    owh_params.cur_weights = owh_params.cur_weights ./ sum(owh_params.cur_weights);
+    %owh_params.cur_weights = owh_params.cur_weights ./ sum(owh_params.cur_weights);
 
     % check if converge
     weight_diff = norm(owh_params.cur_weights - old_weights, 2);
