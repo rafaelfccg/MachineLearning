@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="dtf_test.cpp" />
+    <ClCompile Include="simple_test.cpp" />
+    <ClCompile Include="standard_test.cpp" />
+    <ClCompile Include="entropy_test.cpp" />
+    <ClCompile Include="pairwise_test.cpp" />
+    <ClCompile Include="estimation_test.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\inc\dtf.h" />
+    <ClInclude Include="..\inc\decision_trees.h" />
+    <ClInclude Include="..\inc\serialize.h" />
+    <ClInclude Include="..\inc\dtf_compute.h" />
+    <ClInclude Include="..\inc\parallel_for.h" />
+    <ClInclude Include="..\inc\ppl_partitioner.h" />
+    <ClInclude Include="..\inc\image.h" />
+    <ClInclude Include="..\inc\thread_pool.h" />
+    <ClInclude Include="..\inc\imageio.h" />
+    <ClInclude Include="..\inc\dir.h" />
+    <ClInclude Include="..\inc\WicIo.h" />
+    <ClInclude Include="..\inc\timing.h" />
+    <ClInclude Include="..\inc\dtf_classify.h" />
+    <ClInclude Include="..\inc\dtf_learning.h" />
+    <ClInclude Include="..\inc\dtf_training.h" />
+    <ClInclude Include="..\inc\dtf_inference.h" />
+    <ClInclude Include="..\inc\convdiag.h" />
+    <ClInclude Include="..\inc\dtf_mcmc.h" />
+    <ClInclude Include="..\inc\make_unique.h" />
+    <ClInclude Include="..\inc\dataset.h" />
+  </ItemGroup>
+</Project>
