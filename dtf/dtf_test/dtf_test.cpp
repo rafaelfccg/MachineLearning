@@ -28,6 +28,8 @@ int main()
       EstimationTest::Run();
 
       std::cout << "All tests passed." << std::endl;
+
+	  getchar();
    }
    catch (std::exception& e)
    {
