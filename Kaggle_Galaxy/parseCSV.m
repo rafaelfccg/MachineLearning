@@ -5,5 +5,6 @@ function data = parseCSV(csvfile)
 % csvfile = 'data/seasons.csv';
 
 data = readtable(csvfile);
+data = data{:,:};
 
 end
