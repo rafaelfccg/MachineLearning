@@ -23,7 +23,10 @@ end
 
 % set up model
 gists = [ones(len,1) gists];
+% train model
+[beta, sigma, resid] = mvregress(gists, labels(1:len, 2:end));
 
-[beta, sigma, resid] = mvregress(gists, labels(1:len,:));
+% test model
+
 
 
